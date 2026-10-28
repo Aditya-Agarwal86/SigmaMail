@@ -1,0 +1,351 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User model for verified college identity
+model User {
+  id               String          @id @default(cuid())
+  googleSubjectId  String?         @unique // Stable Google OAuth 'sub' claim for reliable identity mapping
+  name             String?
+  email            String          @unique
+  emailVerified    DateTime?
+  image            String?
+  role             UserRole        @default(STUDENT)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  // Preferences & Settings
+  preferences      UserPreference?
+
+  // Separate Gmail Integration Credentials (Encrypted at rest)
+  gmailCredential  GmailCredential?
+
+  // Synced Emails, Deadlines & Audit Logs
+  emails           Email[]
+  deadlines        Deadline[]
+  auditLogs        AuditLog[]
+  opportunities    PlacementOpportunity[]
+  syncJobs         SyncJob[]
+
+  // Student-Managed Faculty Directory
+  facultyContacts  FacultyContact[]
+
+  @@index([email])
+}
+
+// Student-Managed Faculty Directory
+model FacultyContact {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  email       String   // Normalized faculty email address
+  courseLabel String?  // Optional subject/course code (e.g. "CSE2001", "Data Structures")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, email])
+  @@index([userId])
+}
+
+// Administrator / System Trusted Sender Registry
+model TrustedSenderRule {
+  id             String        @id @default(cuid())
+  senderEmail    String        @unique // Exact normalized sender email (e.g. "dean.acad@vitap.ac.in")
+  displayName    String?       // Informational label
+  targetCategory EmailCategory
+  targetSubtype  String?       // Optional subtype (e.g. PLACEMENT_DRIVE, PLACEMENT_CONGRATULATIONS)
+  school         SchoolCode?   // Optional school affiliation
+  priority       Int           @default(100) // Rule precedence weight
+  isActive       Boolean       @default(true)
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([senderEmail])
+  @@index([targetCategory])
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+// Separate Gmail Account & Encrypted OAuth Grant (Tokens never stored in plaintext)
+model GmailCredential {
+  id                    String      @id @default(cuid())
+  userId                String      @unique
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gmailAddress          String
+  encryptedAccessToken  String      @db.Text
+  encryptedRefreshToken String      @db.Text
+  tokenIv               String      // AES-256-GCM Refresh Token Initialization Vector (hex)
+  tokenTag              String      // AES-256-GCM Refresh Token Auth Tag (hex)
+  accessTokenIv         String?     // AES-256-GCM Access Token Initialization Vector (hex)
+  accessTokenTag        String?     // AES-256-GCM Access Token Auth Tag (hex)
+  scope                 String      // Granted scopes (e.g., gmail.readonly, gmail.modify)
+  expiresAt             DateTime
+  lastHistoryId         String?     // Watermark cursor for incremental delta sync
+  lastSyncAt            DateTime?
+  syncStatus            SyncStatus  @default(IDLE)
+  syncError             String?     @db.Text
+
+  // Phase 6 Full Sync Progress tracking
+  isSyncingAll          Boolean     @default(false)
+  syncNextPageToken     String?     // Gmail API pageToken watermark for resumable import
+  totalSyncedCount      Int         @default(0)
+  totalEstimatedCount   Int?        // Total messages in mailbox reported by Gmail profile
+
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@index([userId, syncStatus])
+}
+
+enum SyncStatus {
+  IDLE
+  SYNCING
+  FAILED
+  REVOKED
+}
+
+// User Preferences and Controls (Data governance & privacy toggles)
+model UserPreference {
+  id                    String      @id @default(cuid())
+  userId                String      @unique
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aiSummariesEnabled    Boolean     @default(true)
+  aiDeadlineExtraction  Boolean     @default(true)
+  allowedAiProviders    String      @default("gemini")
+  autoArchiveRead       Boolean     @default(false)
+  retentionDays         Int         @default(90) // Local copy data retention limit in days
+  notifyDeadlines       Boolean     @default(true)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+}
+
+// Normalized Synced Email Header & Metadata
+model Email {
+  id                       String         @id @default(cuid())
+  userId                   String
+  user                     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gmailMessageId           String         // Google Gmail internal message ID
+  gmailThreadId            String         // Google Gmail internal thread ID
+  sender                   String         // Full From header (e.g. "Dean Academics <dean.acad@vitap.ac.in>")
+  senderAddress            String         // Clean email address for fast rule matching
+  recipient                String         // To header
+  subject                  String         @default("(No Subject)")
+  snippet                  String         @db.Text
+  bodyPlain                String?        @db.Text
+  bodyHtml                 String?        @db.Text
+  receivedAt               DateTime
+  isRead                   Boolean        @default(false)
+  isStarred                Boolean        @default(false)
+  isArchived               Boolean        @default(false)
+  isTrash                  Boolean        @default(false)
+
+  // Categorization & Priority
+  category                 EmailCategory  @default(UNCATEGORIZED)
+  subCategory              String?        // e.g. PLACEMENT_DRIVE, PLACEMENT_RESULT, PLACEMENT_CONGRATULATIONS
+  school                   SchoolCode?    // e.g. SCOPE, SENSE, SMEC, SAS, VISH, VSL, VSB, SBST
+  classificationConfidence Float          @default(1.0)
+  classificationReason     String?
+  classificationEngine     String?        @default("rule-engine-v2")
+  classifiedAt             DateTime?
+  userCategoryOverride     EmailCategory? // Preserves user manual feedback & corrections
+  isManualOverride         Boolean        @default(false)
+  priorityScore            Float          @default(0.0) // 0 to 100 importance score
+  priorityLevel            PriorityLevel  @default(NORMAL)
+  priorityFactors          Json?          // Detailed breakdown of contributing factors
+  isImportant              Boolean        @default(false)
+
+  // AI-generated summary outputs
+  aiSummary                String?        @db.Text
+  summaryGeneratedAt       DateTime?
+
+  // Relations
+  deadlines                Deadline[]
+  labels                   EmailLabel[]
+  opportunityId            String?
+  opportunity              PlacementOpportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+
+  @@unique([userId, gmailMessageId])
+  @@index([userId, receivedAt(sort: Desc)])
+  @@index([userId, category])
+  @@index([userId, subCategory])
+  @@index([userId, school])
+  @@index([userId, priorityLevel])
+  @@index([userId, isImportant])
+  @@index([userId, senderAddress])
+  @@index([userId, isArchived, isTrash])
+  @@index([opportunityId])
+}
+
+enum PriorityLevel {
+  URGENT
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum SchoolCode {
+  SCOPE
+  SENSE
+  SMEC
+  SAS
+  VISH
+  VSL
+  VSB
+  SBST
+  UNASSIGNED
+}
+
+enum EmailCategory {
+  DEAN_ACADEMICS
+  REGISTRAR
+  ASST_DEAN_ACADEMICS
+  ACADEMICS
+  EXAMINATIONS
+  CDC_AND_PLACEMENT
+  SDC
+  SCHOOLS
+  EVENTS_AND_CLUBS
+  TRANSPORT
+  HOSTEL
+  SPORTS
+  OTHER
+
+  // Legacy mappings preserved for non-destructive backwards compatibility
+  PLACEMENTS_AND_INTERNSHIPS
+  ADMINISTRATIVE_AND_HOSTEL
+  GENERAL_ANNOUNCEMENTS
+  UNCATEGORIZED
+}
+
+// Actionable Academic & Placement Deadlines
+model Deadline {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailId         String
+  email           Email          @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  title           String         // e.g. "FAT Examination Hall Ticket Download"
+  description     String?        @db.Text
+  dueDate         DateTime       // Extracted target deadline datetime
+  category        EmailCategory  @default(ACADEMICS)
+  confidenceScore Float          @default(0.8)
+  isCandidate     Boolean        @default(true) // Candidate date vs confirmed reminder
+  evidenceSnippet String?        @db.Text       // Surrounding text evidence
+  status          DeadlineStatus @default(PENDING)
+  reminderMinutesBefore Int?     @default(1440) // Reminder alert timing (e.g., 1440 = 24h, 60 = 1h, null/0 = none)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId, dueDate(sort: Asc)])
+  @@index([userId, status])
+  @@index([userId, isCandidate])
+  @@index([emailId])
+}
+
+enum DeadlineStatus {
+  PENDING
+  COMPLETED
+  DISMISSED
+}
+
+// Labels mapping to Gmail system/custom labels
+model EmailLabel {
+  id        String   @id @default(cuid())
+  emailId   String
+  email     Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  name      String   // e.g. "INBOX", "UNREAD", "STARRED", "IMPORTANT"
+  
+  @@unique([emailId, name])
+  @@index([emailId])
+}
+
+// Audit Trail for Security & Privacy Compliance
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String   // e.g. "GMAIL_CONNECTED", "GMAIL_DISCONNECTED", "MAILBOX_PURGED"
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+// Workstream C: Company-Centric Placement Opportunity Tracking
+model PlacementOpportunity {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName     String           // Normalized display name (e.g., "Tata Power", "Leadsquared")
+  normalizedKey   String           // Normalized key for exact matching (e.g., "tatapower", "leadsquared")
+  batchCycle      String?          // e.g., "2027", "2026"
+  currentStage    OpportunityStage @default(DRIVE_ANNOUNCED)
+  statusSnippet   String?          // Short summary of latest activity
+  lastActivityAt  DateTime         @default(now())
+  emails          Email[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([userId, normalizedKey, batchCycle])
+  @@index([userId, lastActivityAt(sort: Desc)])
+  @@index([userId, currentStage])
+}
+
+enum OpportunityStage {
+  DRIVE_ANNOUNCED
+  REGISTRATION_OPEN
+  ASSESSMENT_SCHEDULED
+  PRE_PLACEMENT_TALK
+  INTERVIEW_SCHEDULED
+  SHORTLIST_ANNOUNCED
+  OFFER_CONGRATULATIONS
+  UPDATE_GENERAL
+}
+
+// Phase 10: Durable Background Sync Jobs
+model SyncJob {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          SyncJobStatus @default(QUEUED)
+  mode            String        @default("FULL_IMPORT") // "FULL_IMPORT" | "INCREMENTAL"
+  cursor          String?       // Gmail nextPageToken cursor
+  batchCount      Int           @default(0)
+  totalProcessed  Int           @default(0)
+  retryCount      Int           @default(0)
+  lastError       String?       @db.Text
+  lockedAt        DateTime?     // Worker heartbeat lease
+  lockedBy        String?       // Worker ID or execution token
+  startedAt       DateTime      @default(now())
+  completedAt     DateTime?
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([status, lockedAt])
+}
+
+enum SyncJobStatus {
+  QUEUED
+  RUNNING
+  RETRY_WAIT
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: campusinbox-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: campusinbox_user
+      POSTGRES_PASSWORD: campusinbox_password
+      POSTGRES_DB: campusinbox_db
+    ports:
+      - "5433:5432" # Uses port 5433 on host to avoid conflict with standard 5432
+    volumes:
+      - campusinbox_pgdata:/var/lib/postgresql/data
+
+volumes:
+  campusinbox_pgdata:
+    driver: local
