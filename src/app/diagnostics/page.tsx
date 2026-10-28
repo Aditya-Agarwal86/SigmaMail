@@ -49,76 +49,62 @@ export default async function DiagnosticsPage() {
   const isDemoUser = user.email === "fictional.student@vitapstudent.ac.in";
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen w-full overflow-hidden bg-[#F7F8F4]">
       <Sidebar stats={stats} isDemoUser={isDemoUser} />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Header user={user} isDemoUser={isDemoUser} />
 
         <main className="flex-1 overflow-y-auto p-6 max-w-6xl mx-auto space-y-6 w-full">
-          <div className="pb-2 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="pb-2 border-b border-[#E1E5DC] flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-blue-600" />
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  Classification Diagnostics & Observability
-                </h2>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Developer/diagnostic inspection of rule execution, sender normalization, and override state
+              <h2 className="text-xl font-bold tracking-tight text-[#252923]">
+                Intelligence Pipeline Diagnostics
+              </h2>
+              <p className="text-xs text-[#697168]">
+                Diagnostic inspector for classification engines, priority algorithms, and model routing
               </p>
             </div>
-            <span className="text-xs font-semibold text-slate-500">
-              {emails.length} of {stats.total} Emails Inspected
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0]">
+              Development Only
             </span>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+          <div className="bg-white rounded-xl shadow-card border border-[#E1E5DC] overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 dark:bg-slate-800/60 dark:border-slate-800 font-semibold text-slate-600 dark:text-slate-300">
-                  <tr>
-                    <th className="px-4 py-3">Sender & Subject</th>
-                    <th className="px-3 py-3">Normalized From</th>
-                    <th className="px-3 py-3">Category</th>
-                    <th className="px-3 py-3">Subtype / School</th>
-                    <th className="px-3 py-3">Confidence</th>
-                    <th className="px-4 py-3">Reason / Matched Rule</th>
-                    <th className="px-3 py-3">Override?</th>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#F0F2EB] border-b border-[#E1E5DC] text-[#252923] font-semibold">
+                    <th className="p-3">Subject / Sender</th>
+                    <th className="p-3">Category</th>
+                    <th className="p-3">Engine / Conf</th>
+                    <th className="p-3">Priority</th>
+                    <th className="p-3">Classification Reason</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {emails.map((email) => (
-                    <tr key={email.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                      <td className="px-4 py-3 max-w-xs">
-                        <p className="font-semibold text-slate-900 dark:text-white truncate">{email.subject}</p>
-                        <p className="text-[11px] text-slate-500 truncate">{email.sender}</p>
+                <tbody className="divide-y divide-[#E1E5DC]">
+                  {emails.map((e) => (
+                    <tr key={e.id} className="hover:bg-[#F7F8F4] transition-colors">
+                      <td className="p-3 max-w-xs truncate">
+                        <div className="font-semibold text-[#252923] truncate">{e.subject}</div>
+                        <div className="text-[#697168] truncate text-[11px]">{e.sender}</div>
                       </td>
-                      <td className="px-3 py-3 font-mono text-[11px] text-slate-600 dark:text-slate-400">
-                        {email.senderAddress}
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">
-                          {CATEGORY_DISPLAY_NAMES[email.category] || email.category}
+                      <td className="p-3">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0]">
+                          {CATEGORY_DISPLAY_NAMES[e.category] || e.category}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-[11px] text-slate-500">
-                        {email.subCategory || email.school || "—"}
+                      <td className="p-3 text-[#697168]">
+                        <div>{e.classificationEngine}</div>
+                        <div className="text-[10px] text-[#244A3A]">{(e.classificationConfidence * 100).toFixed(0)}%</div>
                       </td>
-                      <td className="px-3 py-3 font-semibold text-slate-700 dark:text-slate-300">
-                        {(email.classificationConfidence * 100).toFixed(0)}%
+                      <td className="p-3">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#F0F2EB] text-[#252923] border border-[#E1E5DC]">
+                          {e.priorityLevel} ({e.priorityScore})
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-[11px] text-slate-500 max-w-xs truncate" title={email.classificationReason || ""}>
-                        {email.classificationReason || "—"}
-                      </td>
-                      <td className="px-3 py-3">
-                        {email.isManualOverride ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] bg-purple-50 text-purple-700 font-bold dark:bg-purple-950/60 dark:text-purple-300">
-                            MANUAL
-                          </span>
-                        ) : (
-                          <span className="text-[11px] text-slate-400">Auto</span>
-                        )}
+                      <td className="p-3 text-[#697168] text-[11px] max-w-sm truncate">
+                        {e.classificationReason}
                       </td>
                     </tr>
                   ))}

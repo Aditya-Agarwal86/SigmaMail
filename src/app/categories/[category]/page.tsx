@@ -73,146 +73,113 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const meta = CATEGORY_METADATA[categoryEnum] || CATEGORY_METADATA.OTHER;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen w-full overflow-hidden bg-[#F7F8F4]">
       <Sidebar stats={stats} isDemoUser={isDemoUser} />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Header user={user} isDemoUser={isDemoUser} />
 
         <main className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto space-y-4 w-full">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-            <div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`px-2.5 py-0.5 rounded-md font-bold text-xs border ${meta.bg} ${meta.color} ${meta.border}`}
-                >
-                  {meta.label}
-                </span>
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  Category Feed
+          {/* Category Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E1E5DC]">
+            <div className="flex items-center gap-3">
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-lg font-semibold text-sm border ${meta.bg} ${meta.color} ${meta.border}`}
+              >
+                {meta.label}
+              </span>
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-[#252923]">
+                  {meta.label} Feed
                 </h2>
+                <p className="text-xs text-[#697168]">
+                  Verified university announcements categorized under {meta.label}
+                </p>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Showing all university communications categorized under {meta.label}
-              </p>
             </div>
+
             <div className="flex items-center gap-2">
+              {/* CDC-Specific Toggle: Feed vs Tracked Company Opportunities */}
               {isCDC && (
-                <div className="flex items-center p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-xs font-medium">
+                <div className="flex items-center p-0.5 rounded-lg bg-[#F0F2EB] border border-[#E1E5DC] text-xs">
                   <Link
                     href={`/categories/${categoryEnum}`}
-                    className={`px-3 py-1 rounded-md transition-colors ${
+                    className={`px-3 py-1 rounded-md font-medium transition-colors ${
                       !isOpportunitiesView
-                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm font-semibold"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                        ? "bg-white text-[#244A3A] font-semibold shadow-xs"
+                        : "text-[#697168] hover:text-[#252923]"
                     }`}
                   >
-                    All Messages
+                    Email Stream
                   </Link>
                   <Link
                     href={`/categories/${categoryEnum}?view=opportunities`}
-                    className={`px-3 py-1 rounded-md transition-colors flex items-center gap-1.5 ${
+                    className={`px-3 py-1 rounded-md font-medium transition-colors flex items-center gap-1.5 ${
                       isOpportunitiesView
-                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm font-semibold"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                        ? "bg-white text-[#244A3A] font-semibold shadow-xs"
+                        : "text-[#697168] hover:text-[#252923]"
                     }`}
                   >
                     <Building2 className="h-3.5 w-3.5" />
-                    <span>Company Opportunities</span>
+                    <span>Company Drives</span>
                   </Link>
                 </div>
               )}
-              <span className="text-xs font-semibold text-slate-500">
-                {totalCount} {isOpportunitiesView ? "Companies Tracked" : "Messages Total"}
+
+              <span className="text-xs font-medium text-[#697168]">
+                {totalCount} Total Items
               </span>
             </div>
           </div>
 
-          {/* Sub-Filters (Faculty Directory button for Academics, School selector for Schools, Subtypes for CDC) */}
+          {/* Render Filters if in Stream view */}
           {!isOpportunitiesView && <InboxFilters currentCategory={categoryEnum} />}
 
+          {/* Main List Render: Company Opportunities or Email Stream */}
           {isOpportunitiesView ? (
-            <>
-              {(() => {
-                const currentCategoryUrl = `/categories/${categoryEnum}?view=opportunities${page > 1 ? `&page=${page}` : ""}`;
-                return <OpportunitiesList opportunities={opportunities} currentCategoryUrl={currentCategoryUrl} />;
-              })()}
-
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-2 pb-6 text-xs text-slate-500">
-                  <span>
-                    Page {page} of {totalPages} ({totalCount} opportunities)
-                  </span>
-                  <div className="flex items-center gap-1">
-                    {page > 1 && (
-                      <Link
-                        href={`/categories/${categoryEnum}?view=opportunities&page=${page - 1}`}
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 flex items-center gap-1 font-medium"
-                      >
-                        <ChevronLeft className="h-4 w-4" /> Previous
-                      </Link>
-                    )}
-                    {page < totalPages && (
-                      <Link
-                        href={`/categories/${categoryEnum}?view=opportunities&page=${page + 1}`}
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 flex items-center gap-1 font-medium"
-                      >
-                        Next <ChevronRight className="h-4 w-4" />
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              )}
-            </>
+            <OpportunitiesList
+              opportunities={opportunities}
+              currentCategoryUrl={`/categories/${categoryEnum}?view=opportunities`}
+            />
           ) : emails.length === 0 ? (
-            <div className="p-12 text-center rounded-xl border border-dashed border-slate-300 bg-white dark:border-slate-800 dark:bg-slate-900">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                No emails found in {meta.label}
-              </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                New communications matching this category or filter will automatically appear here.
+            <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
+              <Briefcase className="h-10 w-10 text-[#697168] mx-auto mb-3" />
+              <h3 className="text-sm font-semibold text-[#252923]">No messages in this category</h3>
+              <p className="text-xs text-[#697168] mt-1">
+                New emails matching {meta.label} will appear here automatically.
               </p>
             </div>
           ) : (
             <>
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
-                {(() => {
-                  const currentCategoryParams = new URLSearchParams();
-                  if (page > 1) currentCategoryParams.set("page", page.toString());
-                  if (subCategory) currentCategoryParams.set("subCategory", subCategory);
-                  if (school) currentCategoryParams.set("school", school);
-                  if (priority) currentCategoryParams.set("priority", priority);
-                  if (hasDeadlines) currentCategoryParams.set("deadlines", "true");
-                  const currentQuery = currentCategoryParams.toString();
-                  const currentCategoryUrl = currentQuery
-                    ? `/categories/${categoryEnum}?${currentQuery}`
-                    : `/categories/${categoryEnum}`;
-
-                  return emails.map((email) => (
-                    <EmailCard key={email.id} email={email} returnUrl={currentCategoryUrl} />
-                  ));
-                })()}
+              <div className="bg-white rounded-xl shadow-card border border-[#E1E5DC] overflow-hidden">
+                {emails.map((email) => (
+                  <EmailCard
+                    key={email.id}
+                    email={email}
+                    returnUrl={`/categories/${categoryEnum}${page > 1 ? `?page=${page}` : ""}`}
+                  />
+                ))}
               </div>
 
-              {/* Pagination Controls */}
+              {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-2 pb-6 text-xs text-slate-500">
+                <div className="flex items-center justify-between pt-2 pb-6 text-xs text-[#697168]">
                   <span>
                     Page {page} of {totalPages} ({totalCount} total)
                   </span>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {page > 1 && (
                       <Link
-                        href={`/categories/${categoryEnum}?page=${page - 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}`}
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 flex items-center gap-1 font-medium"
+                        href={`/categories/${categoryEnum}?page=${page - 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${isOpportunitiesView ? "&view=opportunities" : ""}`}
+                        className="px-3 py-1.5 rounded-lg border border-[#E1E5DC] bg-white text-[#252923] hover:bg-[#F7F8F4] flex items-center gap-1 font-medium transition-colors"
                       >
                         <ChevronLeft className="h-4 w-4" /> Previous
                       </Link>
                     )}
                     {page < totalPages && (
                       <Link
-                        href={`/categories/${categoryEnum}?page=${page + 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}`}
-                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 flex items-center gap-1 font-medium"
+                        href={`/categories/${categoryEnum}?page=${page + 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${isOpportunitiesView ? "&view=opportunities" : ""}`}
+                        className="px-3 py-1.5 rounded-lg border border-[#E1E5DC] bg-white text-[#252923] hover:bg-[#F7F8F4] flex items-center gap-1 font-medium transition-colors"
                       >
                         Next <ChevronRight className="h-4 w-4" />
                       </Link>

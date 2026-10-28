@@ -59,113 +59,87 @@ export function DeadlineActionPanel({ deadlines }: DeadlineActionPanelProps) {
   const confirmedDeadlines = deadlines.filter((d) => d.status === "PENDING" && !d.isCandidate);
 
   return (
-    <div className="mx-6 my-4 space-y-4">
-      {/* 1. Unreviewed Candidate Deadlines requiring user confirmation */}
-      {pendingCandidates.length > 0 && (
-        <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-200 space-y-3 dark:bg-amber-950/40 dark:border-amber-900/60">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-amber-900 font-bold text-xs uppercase tracking-wider dark:text-amber-300">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <span>Detected Candidate Deadlines (Needs Confirmation)</span>
+    <div className="rounded-xl border border-[#E1E5DC] bg-white p-5 shadow-card space-y-4">
+      <div className="flex items-center gap-2">
+        <Calendar className="h-5 w-5 text-[#244A3A]" />
+        <h3 className="font-bold text-sm text-[#252923]">
+          Detected Deadlines & Dates
+        </h3>
+      </div>
+
+      <div className="space-y-3">
+        {deadlines.map((dl) => (
+          <div
+            key={dl.id}
+            className={`p-3.5 rounded-lg border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+              dl.isCandidate
+                ? "bg-[#F7F8F4] border-[#E1E5DC]"
+                : "bg-[#E5EBE1]/40 border-[#D3DCD0]"
+            }`}
+          >
+            <div className="space-y-1 min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-sm text-[#252923]">{dl.title}</span>
+                {dl.isCandidate ? (
+                  <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-900 border border-amber-200">
+                    Candidate Date
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0]">
+                    Confirmed
+                  </span>
+                )}
+              </div>
+              <p className="text-[#697168]">
+                Due: <strong className="text-[#252923]">{formatDate(dl.dueDate)}</strong> ({formatDueDate(dl.dueDate)})
+              </p>
+              {dl.evidenceSnippet && (
+                <p className="text-[#697168] italic font-mono text-[11px]">
+                  &ldquo;{dl.evidenceSnippet}&rdquo;
+                </p>
+              )}
             </div>
-            <span className="text-[11px] text-amber-700 dark:text-amber-400">
-              Conservative detection • Candidates are not active reminders until confirmed
-            </span>
-          </div>
 
-          <div className="space-y-2.5">
-            {pendingCandidates.map((dl) => (
-              <div
-                key={dl.id}
-                className="p-3.5 rounded-lg bg-white border border-amber-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 dark:bg-slate-900 dark:border-amber-900/50"
-              >
-                <div className="space-y-1 min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                      {dl.title}
-                    </h4>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold dark:bg-amber-900/50 dark:text-amber-300">
-                      {(dl.confidenceScore * 100).toFixed(0)}% Confidence
-                    </span>
-                  </div>
-
-                  {dl.evidenceSnippet && (
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 font-mono bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded">
-                      &ldquo;{dl.evidenceSnippet}&rdquo;
-                    </p>
-                  )}
-
-                  <div className="text-[11px] text-rose-600 font-medium pt-0.5">
-                    Target Date: {formatDueDate(dl.dueDate)} ({formatDate(dl.dueDate)})
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
+              {dl.isCandidate && (
+                <>
+                  <Button
+                    size="sm"
+                    disabled={loadingId === dl.id}
+                    onClick={() => handleAction(dl.id, "CONFIRM")}
+                    className="gap-1.5 text-xs bg-[#244A3A] hover:bg-[#1B382C] text-white shadow-xs"
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>Confirm</span>
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     disabled={loadingId === dl.id}
-                    onClick={() => handleAction(dl.id, "CONFIRM")}
-                    className="h-8 gap-1.5 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300"
-                  >
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>Confirm & Activate</span>
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={loadingId === dl.id}
                     onClick={() => handleAction(dl.id, "DISMISS")}
-                    className="h-8 gap-1.5 text-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50"
+                    className="gap-1.5 text-xs text-[#697168] hover:text-rose-700"
                   >
                     <XCircle className="h-3.5 w-3.5" />
                     <span>Dismiss</span>
                   </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+                </>
+              )}
 
-      {/* 2. Confirmed Deadlines */}
-      {confirmedDeadlines.length > 0 && (
-        <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200 space-y-2 dark:bg-emerald-950/30 dark:border-emerald-900/60">
-          <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs uppercase tracking-wider dark:text-emerald-300">
-            <Calendar className="h-4 w-4 text-emerald-600" />
-            <span>Active Confirmed Deadlines</span>
+              {!dl.isCandidate && dl.status === "PENDING" && (
+                <Button
+                  size="sm"
+                  disabled={loadingId === dl.id}
+                  onClick={() => handleAction(dl.id, "COMPLETE")}
+                  className="gap-1.5 text-xs bg-[#244A3A] hover:bg-[#1B382C] text-white shadow-xs"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span>Mark Done</span>
+                </Button>
+              )}
+            </div>
           </div>
-          <div className="space-y-2">
-            {confirmedDeadlines.map((dl) => (
-              <div
-                key={dl.id}
-                className="p-3 rounded-lg bg-white border border-emerald-200 shadow-xs flex items-center justify-between gap-3 dark:bg-slate-900 dark:border-emerald-900/40"
-              >
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">{dl.title}</h4>
-                  <p className="text-[11px] text-slate-500">{formatDate(dl.dueDate)}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="destructive" className="text-xs">
-                    {formatDueDate(dl.dueDate)}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={loadingId === dl.id}
-                    onClick={() => handleAction(dl.id, "COMPLETE")}
-                    className="h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300"
-                  >
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                    <span>Done</span>
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }

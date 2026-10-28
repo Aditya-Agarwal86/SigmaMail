@@ -66,7 +66,7 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
       });
       const data = await res.json();
       if (res.ok) {
-        setFeedback(`Re-classified ${data.processed} emails with Phase 6 rules.`);
+        setFeedback(`Re-classified ${data.processed} emails with intelligence rules.`);
         router.refresh();
       } else {
         setFeedback(data.error || "Failed to reprocess emails.");
@@ -91,7 +91,7 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
           {isAcademics && (
             <button
               onClick={() => setFacultyModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-xs dark:bg-blue-950/40 dark:border-blue-900 dark:text-blue-300"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0] hover:bg-[#d9e2d4] font-semibold text-xs"
             >
               <UserPlus className="h-3.5 w-3.5" />
               <span>Manage Faculty Directory</span>
@@ -100,7 +100,7 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
 
           {isSchools && (
             <div className="flex items-center gap-1.5 overflow-x-auto">
-              <span className="text-slate-400 font-medium shrink-0 flex items-center gap-1">
+              <span className="text-[#697168] font-medium shrink-0 flex items-center gap-1">
                 <Layers className="h-3.5 w-3.5" />
                 School:
               </span>
@@ -109,8 +109,8 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
                 className={cn(
                   "px-2.5 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors",
                   !currentSchool
-                    ? "bg-cyan-700 text-white font-semibold"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400"
+                    ? "bg-[#244A3A] text-white font-semibold"
+                    : "bg-[#F0F2EB] text-[#252923] hover:bg-[#E5EBE1] border border-[#E1E5DC]"
                 )}
               >
                 All Schools
@@ -124,8 +124,8 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
                     className={cn(
                       "px-2.5 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors",
                       active
-                        ? "bg-cyan-700 text-white font-semibold"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400"
+                        ? "bg-[#244A3A] text-white font-semibold"
+                        : "bg-[#F0F2EB] text-[#252923] hover:bg-[#E5EBE1] border border-[#E1E5DC]"
                     )}
                   >
                     {sch}
@@ -137,7 +137,7 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
 
           {isCDC && (
             <div className="flex items-center gap-1.5 overflow-x-auto">
-              <span className="text-slate-400 font-medium shrink-0 flex items-center gap-1">
+              <span className="text-[#697168] font-medium shrink-0 flex items-center gap-1">
                 <Briefcase className="h-3.5 w-3.5" />
                 Section:
               </span>
@@ -150,8 +150,8 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
                     className={cn(
                       "px-2.5 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors",
                       active
-                        ? "bg-amber-600 text-white font-semibold"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400"
+                        ? "bg-[#244A3A] text-white font-semibold"
+                        : "bg-[#F0F2EB] text-[#252923] hover:bg-[#E5EBE1] border border-[#E1E5DC]"
                     )}
                   >
                     {sub.label}
@@ -162,71 +162,55 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
           )}
         </div>
 
-        {/* Action: Reprocess intelligence button */}
-        <button
-          onClick={handleReprocess}
-          disabled={reprocessing}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 disabled:opacity-50 transition-colors dark:bg-blue-950/40 dark:border-blue-900 dark:text-blue-300 shrink-0 self-start sm:self-auto"
-        >
-          <Sparkles className={cn("h-3.5 w-3.5", reprocessing && "animate-spin")} />
-          <span>{reprocessing ? "Re-classifying..." : "Re-classify Emails"}</span>
-        </button>
-      </div>
+        {/* Priority Filter and Deadlines Quick Filter */}
+        <div className="flex items-center gap-1.5 shrink-0 text-xs overflow-x-auto">
+          {/* Priority Pill Filters */}
+          <div className="flex items-center p-0.5 rounded-lg bg-[#F0F2EB] border border-[#E1E5DC]">
+            {PRIORITY_TABS.map((p) => {
+              const active = currentPriority === p.value;
+              return (
+                <Link
+                  key={p.value}
+                  href={createFilterUrl({ priority: p.value || null })}
+                  className={cn(
+                    "px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap",
+                    active
+                      ? "bg-white text-[#244A3A] font-semibold shadow-xs"
+                      : "text-[#697168] hover:text-[#252923]"
+                  )}
+                >
+                  {p.label}
+                </Link>
+              );
+            })}
+          </div>
 
-      {/* Secondary Row: Priority Level & Deadline Filter */}
-      <div className="flex items-center gap-2 overflow-x-auto text-xs">
-        <span className="text-slate-400 font-medium shrink-0 flex items-center gap-1">
-          <Filter className="h-3 w-3" />
-          Priority:
-        </span>
-        {PRIORITY_TABS.map((tab) => {
-          const active = currentPriority === tab.value;
-          return (
-            <Link
-              key={tab.value}
-              href={createFilterUrl({ priority: tab.value || null })}
-              className={cn(
-                "px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors",
-                active
-                  ? "bg-blue-600 text-white font-semibold"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400"
-              )}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
-
-        <span className="text-slate-300 dark:text-slate-700">|</span>
-
-        {/* Deadline toggle */}
-        <Link
-          href={createFilterUrl({ deadlines: hasDeadlines ? null : "true" })}
-          className={cn(
-            "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors border",
-            hasDeadlines
-              ? "bg-rose-50 text-rose-700 border-rose-300 font-semibold dark:bg-rose-950/50 dark:border-rose-800 dark:text-rose-300"
-              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400"
-          )}
-        >
-          <Calendar className="h-3 w-3" />
-          <span>Deadlines Only</span>
-        </Link>
+          {/* Has Deadlines Filter Toggle */}
+          <Link
+            href={createFilterUrl({ deadlines: hasDeadlines ? null : "true" })}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors whitespace-nowrap",
+              hasDeadlines
+                ? "bg-[#E5EBE1] border-[#D3DCD0] text-[#244A3A] font-semibold"
+                : "border-[#E1E5DC] bg-white text-[#697168] hover:bg-[#F7F8F4] hover:text-[#252923]"
+            )}
+          >
+            <Calendar className={cn("h-3.5 w-3.5", hasDeadlines ? "text-[#244A3A]" : "text-[#697168]")} />
+            <span>Deadlines Only</span>
+          </Link>
+        </div>
       </div>
 
       {feedback && (
-        <div className="text-xs p-2 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <div className="text-xs p-2 rounded-lg bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0] font-medium">
           {feedback}
         </div>
       )}
 
-      {/* Modal for Faculty Management */}
+      {/* Faculty Directory Management Modal */}
       <FacultyDirectoryModal
         isOpen={facultyModalOpen}
-        onClose={() => {
-          setFacultyModalOpen(false);
-          router.refresh();
-        }}
+        onClose={() => setFacultyModalOpen(false)}
       />
     </div>
   );

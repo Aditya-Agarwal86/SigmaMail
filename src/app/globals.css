@@ -4,48 +4,67 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* SigmaMail Premium Light Palette:
+       Background: Warm Ivory (#F7F8F4) -> 75 14% 96.5%
+       Surface/Card: Pure White (#FFFFFF) -> 0 0% 100%
+       Sidebar: Soft Sage-White (#F0F2EB) -> 80 14% 94%
+       Foreground: Deep Charcoal (#252923) -> 100 8% 15%
+       Muted Foreground: Muted Charcoal (#697168) -> 110 4% 43%
+       Border: Soft Grey-Green (#E1E5DC) -> 90 12% 88%
+       Primary: Deep Forest Green (#244A3A) -> 155 35% 22%
+       Primary Foreground: #FFFFFF
+       Subtle Accent: Pale Sage (#E5EBE1) -> 96 18% 90%
+       Accent Foreground: Deep Forest Green (#1B382C) -> 155 35% 16%
+    */
+    --background: 75 14% 96.5%;
+    --foreground: 100 8% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 100 8% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --popover-foreground: 100 8% 15%;
+    
+    --primary: 155 35% 22%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 96 18% 90%;
+    --secondary-foreground: 155 35% 16%;
+    
+    --muted: 80 14% 94%;
+    --muted-foreground: 110 4% 43%;
+    
+    --accent: 96 18% 90%;
+    --accent-foreground: 155 35% 16%;
+    
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 90 12% 88%;
+    --input: 90 12% 88%;
+    --ring: 155 35% 22%;
     --radius: 0.5rem;
   }
 
+  /* Support consistent light mode styling even if dark class is present */
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --background: 75 14% 96.5%;
+    --foreground: 100 8% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 100 8% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 100 8% 15%;
+    --primary: 155 35% 22%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 96 18% 90%;
+    --secondary-foreground: 155 35% 16%;
+    --muted: 80 14% 94%;
+    --muted-foreground: 110 4% 43%;
+    --accent: 96 18% 90%;
+    --accent-foreground: 155 35% 16%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 90 12% 88%;
+    --input: 90 12% 88%;
+    --ring: 155 35% 22%;
   }
 }
 
@@ -54,7 +73,9 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    background-color: #F7F8F4;
+    color: #252923;
+    @apply antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

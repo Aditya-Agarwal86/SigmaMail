@@ -74,116 +74,120 @@ export function GmailSettingsPanel({ credential, isDemoUser }: GmailSettingsPane
   };
 
   return (
-    <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-sm space-y-5 dark:bg-slate-900 dark:border-slate-800">
+    <div className="p-6 rounded-xl bg-white border border-[#E1E5DC] shadow-card space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+          <div className="h-8 w-8 rounded-lg bg-[#E5EBE1] border border-[#D3DCD0] flex items-center justify-center text-[#244A3A]">
             <Mail className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              Official University Gmail Authorization
+            <h3 className="text-sm font-bold text-[#252923]">
+              Official Gmail Mailbox Authorization
             </h3>
-            <p className="text-xs text-slate-500">
-              Read-only synchronization for campus announcements and deadlines
+            <p className="text-xs text-[#697168]">
+              Separate, opt-in OAuth authorization to synchronize university circulars & deadlines
             </p>
           </div>
         </div>
 
-        <div>
-          {isConnected ? (
-            <Badge variant="success" className="gap-1 text-xs">
-              <CheckCircle2 className="h-3 w-3" />
-              <span>Connected ({credential?.gmailAddress})</span>
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="border-amber-300 text-amber-800 bg-amber-50 dark:bg-amber-950/50 dark:text-amber-300">
-              Not Connected
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {/* Scope and Security Notice */}
-      <div className="p-3.5 rounded-lg bg-blue-50/70 border border-blue-200 text-xs text-blue-900 dark:bg-blue-950/30 dark:border-blue-900 dark:text-blue-200 space-y-1.5 leading-relaxed">
-        <div className="flex items-center gap-1.5 font-semibold">
-          <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-          <span>Strict Read-Only Access (`gmail.readonly`)</span>
-        </div>
-        <p className="text-[12px]">
-          SigmaMail only requests read-only permission to index incoming academic circulars and notices. It cannot compose, send, archive, or delete your emails in Google Workspace.
-        </p>
-      </div>
-
-      {/* Encrypted Key Indicator */}
-      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1.5 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300">
-        <div className="flex items-center gap-2">
-          <Key className="h-3.5 w-3.5 text-slate-400" />
-          <span>
-            <strong>Encrypted Token Storage:</strong> Tokens are encrypted at rest with AES-256-GCM.
+        {isConnected ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0] w-fit">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span>Authorized & Connected</span>
           </span>
-        </div>
-        {credential?.lastSyncAt && (
-          <div className="text-[11px] text-slate-500 pl-5">
-            Last successful sync: {formatDate(credential.lastSyncAt)} (Status: {credential.syncStatus})
-          </div>
-        )}
-        {credential?.syncError && (
-          <div className="text-[11px] text-rose-600 pl-5 flex items-center gap-1">
-            <AlertCircle className="h-3 w-3 shrink-0" />
-            <span>Sync warning: {credential.syncError}</span>
-          </div>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium text-[#697168] bg-[#F0F2EB] border border-[#E1E5DC] w-fit">
+            <span>Not Connected</span>
+          </span>
         )}
       </div>
 
-      {/* Feedback Alert */}
       {feedback && (
         <div
           className={`p-3 rounded-lg text-xs flex items-center gap-2 ${
             feedback.type === "success"
-              ? "bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
-              : "bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300"
+              ? "bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0]"
+              : "bg-rose-50 text-rose-800 border border-rose-200"
           }`}
         >
-          {feedback.type === "success" ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          {feedback.type === "success" ? (
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+          ) : (
+            <AlertCircle className="h-4 w-4 shrink-0" />
+          )}
           <span>{feedback.message}</span>
         </div>
       )}
 
-      {/* Actions */}
-      <div className="pt-2 flex flex-wrap items-center gap-3">
-        {isConnected ? (
-          <>
+      {isConnected && credential ? (
+        <div className="space-y-4">
+          <div className="text-xs text-[#697168] space-y-2 bg-[#F7F8F4] p-3.5 rounded-lg border border-[#E1E5DC]">
+            <div className="flex justify-between py-1 border-b border-[#E1E5DC]">
+              <span className="font-medium text-[#252923]">Connected Account</span>
+              <span className="font-mono text-[#252923]">{credential.gmailAddress}</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-[#E1E5DC]">
+              <span className="font-medium text-[#252923]">Granted Gmail Scopes</span>
+              <span className="font-mono text-[11px] truncate max-w-xs text-[#252923]">
+                {credential.scope}
+              </span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-[#E1E5DC]">
+              <span className="font-medium text-[#252923]">Token Security</span>
+              <span className="text-[#244A3A] font-medium flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>AES-256-GCM Encrypted at Rest</span>
+              </span>
+            </div>
+            {credential.lastSyncAt && (
+              <div className="flex justify-between py-1">
+                <span className="font-medium text-[#252923]">Last Synchronized</span>
+                <span className="text-[#252923]">{formatDate(credential.lastSyncAt)}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
             <Button
-              size="sm"
               onClick={handleSync}
-              disabled={syncing || disconnecting}
-              className="gap-2"
+              disabled={syncing}
+              className="gap-2 text-xs"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
-              <span>{syncing ? "Synchronizing..." : "Sync Messages Now"}</span>
+              <span>{syncing ? "Synchronizing Mailbox..." : "Check for New Emails"}</span>
             </Button>
 
             <Button
               variant="outline"
-              size="sm"
               onClick={handleDisconnect}
-              disabled={syncing || disconnecting}
-              className="gap-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200 dark:border-rose-900"
+              disabled={disconnecting}
+              className="gap-2 text-xs text-rose-700 border-rose-200 hover:bg-rose-50"
             >
               <Unlink className="h-3.5 w-3.5" />
               <span>{disconnecting ? "Disconnecting..." : "Disconnect Gmail"}</span>
             </Button>
-          </>
-        ) : (
-          <form action="/api/auth/gmail/connect">
-            <Button type="submit" size="sm" className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="p-3.5 rounded-lg bg-[#F7F8F4] border border-[#E1E5DC] text-xs text-[#697168] space-y-1.5 leading-relaxed">
+            <div className="flex items-center gap-2 font-semibold text-[#252923]">
+              <Key className="h-4 w-4 text-[#244A3A]" />
+              <span>Why connect Gmail?</span>
+            </div>
+            <p>
+              SigmaMail only requests read-only permission (<code>gmail.readonly</code>) to fetch official college emails, extract deadlines, and categorize academic communications into your workspace.
+            </p>
+          </div>
+
+          <a href="/api/auth/gmail/connect" className="inline-block">
+            <Button className="gap-2 text-xs">
               <Mail className="h-3.5 w-3.5" />
-              <span>Connect University Gmail</span>
+              <span>Authorize University Gmail Access</span>
             </Button>
-          </form>
-        )}
-      </div>
+          </a>
+        </div>
+      )}
     </div>
   );
 }

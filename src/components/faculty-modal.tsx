@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2, UserPlus, BookOpen, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FacultyContact {
   id: string;
@@ -64,173 +65,151 @@ export function FacultyDirectoryModal({
       const res = await fetch("/api/faculty", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, courseLabel: courseLabel || null }),
+        body: JSON.stringify({ name, email, courseLabel }),
       });
-
       const data = await res.json();
       if (res.ok) {
-        setSuccess(`Added faculty ${name}. Mailbox re-analyzed!`);
+        setSuccess(`Added ${name} to your faculty directory.`);
         setName("");
         setEmail("");
         setCourseLabel("");
         fetchContacts();
       } else {
-        setError(data.error || "Failed to add faculty.");
+        setError(data.error || "Failed to add faculty contact.");
       }
     } catch {
-      setError("Network error adding faculty.");
+      setError("Network error adding contact.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: string, facultyName: string) => {
-    if (!confirm(`Remove ${facultyName} from your faculty directory? Historical emails will be preserved.`)) {
-      return;
-    }
-
+  const handleDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/faculty?id=${id}`, { method: "DELETE" });
       if (res.ok) {
-        setSuccess(`Removed ${facultyName}.`);
-        fetchContacts();
-      } else {
-        const data = await res.json();
-        setError(data.error || "Failed to remove faculty.");
+        setContacts(contacts.filter((c) => c.id !== id));
       }
-    } catch {
-      setError("Network error deleting faculty.");
+    } catch (e) {
+      console.error(e);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+    <div className="fixed inset-0 z-50 bg-[#252923]/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl border border-[#E1E5DC] shadow-dropdown max-w-lg w-full overflow-hidden space-y-4 p-6">
+        <div className="flex items-center justify-between border-b border-[#E1E5DC] pb-3">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-[#E5EBE1] border border-[#D3DCD0] flex items-center justify-center text-[#244A3A]">
               <UserPlus className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white">Manage Faculty Directory</h3>
-              <p className="text-xs text-slate-500">
-                Emails from your faculty members are classified into Academics
+              <h3 className="font-bold text-base text-[#252923]">Faculty Directory</h3>
+              <p className="text-xs text-[#697168]">
+                Route emails from these professors straight to Academics
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-semibold p-1"
+            className="text-xs font-semibold px-2.5 py-1 rounded-md text-[#697168] hover:bg-[#F0F2EB] hover:text-[#252923]"
           >
-            ✕
+            Close
           </button>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-red-50 text-red-800 text-xs dark:bg-red-950/40 dark:text-red-300">
+          <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-50 text-emerald-800 text-xs dark:bg-emerald-950/40 dark:text-emerald-300">
+          <div className="p-3 rounded-lg bg-[#E5EBE1] border border-[#D3DCD0] text-[#244A3A] text-xs flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             <span>{success}</span>
           </div>
         )}
 
         {/* Add Faculty Form */}
-        <form onSubmit={handleAdd} className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl space-y-3">
-          <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-            Add Teaching Faculty
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <form onSubmit={handleAdd} className="space-y-3 bg-[#F7F8F4] p-4 rounded-xl border border-[#E1E5DC]">
+          <h4 className="text-xs font-semibold text-[#252923]">Add Professor or Course Instructor</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <input
               type="text"
-              placeholder="Professor Name"
+              placeholder="Professor Name *"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="p-2 rounded-lg border border-[#E1E5DC] bg-white text-[#252923] placeholder:text-[#697168] focus:ring-1 focus:ring-[#244A3A] focus:outline-none"
             />
             <input
               type="email"
-              placeholder="faculty@vitap.ac.in"
+              placeholder="Faculty Email (*@vitap.ac.in) *"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="p-2 rounded-lg border border-[#E1E5DC] bg-white text-[#252923] placeholder:text-[#697168] focus:ring-1 focus:ring-[#244A3A] focus:outline-none"
             />
+          </div>
+          <div className="flex gap-2">
             <input
               type="text"
-              placeholder="Course / Subject (Optional)"
+              placeholder="Course Code / Subject (Optional)"
               value={courseLabel}
               onChange={(e) => setCourseLabel(e.target.value)}
-              className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="flex-1 p-2 text-xs rounded-lg border border-[#E1E5DC] bg-white text-[#252923] placeholder:text-[#697168] focus:ring-1 focus:ring-[#244A3A] focus:outline-none"
             />
+            <Button
+              type="submit"
+              size="sm"
+              disabled={submitting}
+              className="gap-1.5 text-xs bg-[#244A3A] hover:bg-[#1B382C] text-white"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>{submitting ? "Adding..." : "Add"}</span>
+            </Button>
           </div>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition-colors disabled:opacity-50"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>{submitting ? "Saving..." : "Add Faculty Contact"}</span>
-          </button>
         </form>
 
-        {/* Faculty List */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Configured Faculty ({contacts.length})
-            </h4>
-          </div>
+        {/* Directory List */}
+        <div className="space-y-2 max-h-56 overflow-y-auto">
+          <h4 className="text-xs font-semibold text-[#697168] uppercase tracking-wider">
+            Registered Professors ({contacts.length})
+          </h4>
 
           {loading ? (
-            <p className="text-xs text-slate-400 py-4 text-center">Loading directory...</p>
+            <p className="text-xs text-[#697168] py-4 text-center">Loading faculty list...</p>
           ) : contacts.length === 0 ? (
-            <div className="text-center py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-              <BookOpen className="h-6 w-6 text-slate-300 mx-auto mb-1" />
-              <p className="text-xs text-slate-500">No faculty members configured yet.</p>
-              <p className="text-[11px] text-slate-400">
-                Add your course professors to organize their coursework emails into Academics.
-              </p>
-            </div>
+            <p className="text-xs text-[#697168] py-4 text-center bg-[#F7F8F4] rounded-lg border border-[#E1E5DC]">
+              No custom professors added yet. Emails from verified @vitap.ac.in professors are automatically matched.
+            </p>
           ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-56 overflow-y-auto">
-              {contacts.map((c) => (
-                <div key={c.id} className="py-2.5 flex items-center justify-between text-xs">
-                  <div>
-                    <p className="font-semibold text-slate-800 dark:text-slate-200">{c.name}</p>
-                    <p className="text-slate-500 font-mono text-[11px]">{c.email}</p>
-                    {c.courseLabel && (
-                      <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 text-[10px] dark:bg-blue-950/50 dark:text-blue-300">
-                        {c.courseLabel}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleDelete(c.id, c.name)}
-                    className="p-1.5 rounded hover:bg-red-50 text-slate-400 hover:text-red-600 dark:hover:bg-red-950/40 transition-colors"
-                    title="Remove from directory"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+            contacts.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between p-2.5 rounded-lg border border-[#E1E5DC] bg-white text-xs"
+              >
+                <div>
+                  <p className="font-semibold text-[#252923]">{c.name}</p>
+                  <p className="text-[11px] text-[#697168] font-mono">{c.email}</p>
+                  {c.courseLabel && (
+                    <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0] font-medium">
+                      {c.courseLabel}
+                    </span>
+                  )}
                 </div>
-              ))}
-            </div>
+                <button
+                  onClick={() => handleDelete(c.id)}
+                  className="p-1.5 text-[#697168] hover:text-rose-700 transition-colors"
+                  title="Remove from directory"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))
           )}
-        </div>
-
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>

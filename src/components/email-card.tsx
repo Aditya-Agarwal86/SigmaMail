@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star, Calendar, ChevronRight, Sparkles, AlertCircle } from "lucide-react";
+import { Calendar, ChevronRight, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, CATEGORY_METADATA, PRIORITY_METADATA, cn } from "@/lib/utils";
 
@@ -40,8 +40,8 @@ export function EmailCard({ email, returnUrl }: EmailCardProps) {
     <Link
       href={emailHref}
       className={cn(
-        "block p-4 border-b border-slate-200 transition-colors hover:bg-slate-50/80 dark:border-slate-800/80 dark:hover:bg-slate-800/40",
-        !email.isRead && "bg-blue-50/20 dark:bg-blue-950/10"
+        "block p-4 border-b border-[#E1E5DC] transition-colors hover:bg-[#F7F8F4] bg-white",
+        !email.isRead && "bg-[#F9FAF7]"
       )}
     >
       <div className="flex items-start justify-between gap-4">
@@ -50,7 +50,7 @@ export function EmailCard({ email, returnUrl }: EmailCardProps) {
           <div className="flex items-center gap-2 flex-wrap text-xs">
             <span
               className={cn(
-                "px-2 py-0.5 rounded-md font-semibold text-[11px] border",
+                "px-2 py-0.5 rounded-md font-medium text-[11px] border",
                 categoryMeta.bg,
                 categoryMeta.color,
                 categoryMeta.border
@@ -62,7 +62,7 @@ export function EmailCard({ email, returnUrl }: EmailCardProps) {
             {priorityMeta && (
               <span
                 className={cn(
-                  "inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold text-[11px] border",
+                  "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-[11px] border",
                   priorityMeta.bg,
                   priorityMeta.color,
                   priorityMeta.border
@@ -74,43 +74,43 @@ export function EmailCard({ email, returnUrl }: EmailCardProps) {
             )}
 
             {email.deadlines && email.deadlines.length > 0 && (
-              <Badge variant="destructive" className="gap-1 text-[11px]">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-medium text-[11px] bg-rose-50 text-rose-800 border border-rose-200">
                 <Calendar className="h-3 w-3" />
                 <span>
                   {email.deadlines.length} {email.deadlines.length === 1 ? "Deadline" : "Deadlines"}
                 </span>
-              </Badge>
+              </span>
             )}
 
-            <span className="text-slate-400">•</span>
-            <span className="text-slate-500 text-[11px]">{formatDate(email.receivedAt)}</span>
+            <span className="text-[#E1E5DC]">•</span>
+            <span className="text-[#697168] text-[11px] font-normal">{formatDate(email.receivedAt)}</span>
           </div>
 
           {/* Subject & Sender */}
           <div>
             <h3
               className={cn(
-                "text-sm font-semibold truncate",
-                email.isRead ? "text-slate-700 dark:text-slate-300" : "text-slate-900 font-bold dark:text-white"
+                "text-sm tracking-tight truncate",
+                email.isRead ? "text-[#252923] font-medium" : "text-[#244A3A] font-semibold"
               )}
             >
               {email.subject}
             </h3>
-            <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{email.sender}</p>
+            <p className="text-xs text-[#697168] font-normal truncate mt-0.5">{email.sender}</p>
           </div>
 
           {/* AI Summary or Snippet */}
           {email.aiSummary ? (
-            <div className="flex items-start gap-1.5 text-xs text-slate-600 bg-slate-100/80 rounded-md p-2 mt-1 border border-slate-200/80 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300">
-              <Sparkles className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-1.5 text-xs text-[#252923] bg-[#F7F8F4] rounded-md p-2 mt-1 border border-[#E1E5DC]">
+              <Sparkles className="h-3.5 w-3.5 text-[#244A3A] shrink-0 mt-0.5" />
               <p className="line-clamp-2 leading-relaxed text-[12px]">{email.aiSummary}</p>
             </div>
           ) : (
-            <p className="text-xs text-slate-500 line-clamp-1 leading-relaxed mt-1">{email.snippet}</p>
+            <p className="text-xs text-[#697168] line-clamp-1 leading-relaxed mt-0.5">{email.snippet}</p>
           )}
         </div>
 
-        <div className="flex items-center pt-2 text-slate-400">
+        <div className="flex items-center pt-2 text-[#697168]">
           <ChevronRight className="h-4 w-4" />
         </div>
       </div>

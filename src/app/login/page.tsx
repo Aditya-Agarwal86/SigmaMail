@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Sparkles, ShieldCheck, Mail, ArrowRight, AlertCircle } from "lucide-react";
+import { Mail, ShieldCheck, ArrowRight, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default async function LoginPage({
@@ -17,48 +17,48 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 flex flex-col justify-center items-center p-4 dark:bg-slate-950">
+    <div className="min-h-screen w-full bg-[#F7F8F4] flex flex-col justify-center items-center p-4">
       <div className="max-w-md w-full space-y-6">
-        {/* Brand */}
+        {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="h-12 w-12 rounded-2xl bg-blue-600 mx-auto flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-            <Sparkles className="h-6 w-6" />
+          <div className="h-12 w-12 rounded-2xl bg-[#244A3A] mx-auto flex items-center justify-center text-white shadow-card">
+            <Mail className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-[#252923]">
             SigmaMail
           </h1>
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+          <p className="text-sm font-medium text-[#697168]">
             Your campus inbox, under control.
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6 dark:bg-slate-900 dark:border-slate-800">
+        <div className="bg-white rounded-2xl border border-[#E1E5DC] shadow-card p-8 space-y-6">
           <div className="space-y-2 text-center">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-bold text-[#252923]">
               Student Sign-In
             </h2>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-[#697168] leading-relaxed">
               Sign in with your official university Google account to access your categorized inbox and deadlines.
             </p>
           </div>
 
           {searchParams.error && (
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-300">
+            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>Authentication failed: {searchParams.error}</span>
             </div>
           )}
 
           {/* Domain Notice Badge */}
-          <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 space-y-1.5 dark:bg-blue-950/40 dark:border-blue-900/60">
-            <div className="flex items-center gap-2 text-blue-900 dark:text-blue-300 font-semibold text-xs">
-              <ShieldCheck className="h-4 w-4 text-blue-600 shrink-0" />
+          <div className="p-3.5 rounded-xl bg-[#E5EBE1] border border-[#D3DCD0] space-y-1.5">
+            <div className="flex items-center gap-2 text-[#244A3A] font-semibold text-xs">
+              <ShieldCheck className="h-4 w-4 text-[#244A3A] shrink-0" />
               <span>Domain Verification Enforced</span>
             </div>
-            <p className="text-[12px] text-blue-800/90 dark:text-blue-300/80 leading-relaxed">
+            <p className="text-[12px] text-[#244A3A] leading-relaxed">
               Only verified university emails ending in{" "}
-              <code className="font-bold text-blue-950 dark:text-blue-200">@vitapstudent.ac.in</code> are
+              <code className="font-bold font-mono">@vitapstudent.ac.in</code> are
               eligible to sign in. Personal Gmail or external accounts are strictly denied.
             </p>
           </div>
@@ -73,7 +73,7 @@ export default async function LoginPage({
           >
             <Button
               type="submit"
-              className="w-full h-11 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 shadow-sm font-semibold text-sm flex items-center justify-center gap-3 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white dark:border-slate-700"
+              className="w-full h-11 bg-white hover:bg-[#F7F8F4] text-[#252923] border border-[#E1E5DC] shadow-xs font-semibold text-sm flex items-center justify-center gap-3"
             >
               <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
                 <path
@@ -98,8 +98,8 @@ export default async function LoginPage({
           </form>
 
           {/* Mailbox Scope Disclaimer */}
-          <div className="pt-2 border-t border-slate-100 text-center dark:border-slate-800">
-            <p className="text-[11px] text-slate-400 leading-snug">
+          <div className="pt-2 border-t border-[#E1E5DC] text-center">
+            <p className="text-[11px] text-[#697168] leading-snug">
               Signing in only verifies your university student identity. Gmail mailbox synchronization is a separate,
               explicit opt-in authorization step.
             </p>
@@ -110,7 +110,7 @@ export default async function LoginPage({
         <div className="text-center">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors dark:hover:text-slate-200"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#697168] hover:text-[#244A3A] transition-colors"
           >
             <span>Explore synthetic offline demo</span>
             <ArrowRight className="h-3 w-3" />
