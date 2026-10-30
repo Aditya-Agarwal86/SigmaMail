@@ -69,12 +69,24 @@ export function EmailBodyRenderer({
 
   // Sanitize HTML for Original View (Preserves HTML template styles and layout inside iframe)
   const originalSanitizedHtml = React.useMemo(() => {
-    if (!bodyHtml) return "";
-    return sanitizeHtml(bodyHtml, {
-      preserveStyles: true,
-      blockRemoteImages: blockRemoteImages,
-    });
-  }, [bodyHtml, blockRemoteImages]);
+    if (bodyHtml && bodyHtml.trim().length > 0) {
+      return sanitizeHtml(bodyHtml, {
+        preserveStyles: true,
+        blockRemoteImages: blockRemoteImages,
+      });
+    }
+
+    // Fallback: If email has plain text, wrap it into a clean, authentic HTML template
+    const rawContent = bodyPlain || snippet || "No email content available.";
+    const escaped = rawContent
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\n\n/g, "</p><p>")
+      .replace(/\n/g, "<br/>");
+
+    return `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1e293b;"><p>${escaped}</p></div>`;
+  }, [bodyHtml, bodyPlain, snippet, blockRemoteImages]);
 
   // Sanitize HTML for Clean View (Typography-enhanced, scoped styles)
   const cleanSanitizedHtml = React.useMemo(() => {
@@ -139,12 +151,11 @@ export function EmailBodyRenderer({
             <button
               type="button"
               onClick={() => handleModeChange("original")}
-              disabled={!hasHtml}
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer",
                 displayMode === "original"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+                  ? "bg-primary text-primary-foreground shadow-xs font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Eye className="h-3.5 w-3.5" />
@@ -202,7 +213,7 @@ export function EmailBodyRenderer({
 
       {/* Main Email Reading Body */}
       <div className="p-6 md:p-8 max-w-4xl mx-auto w-full text-foreground">
-        {displayMode === "original" && hasHtml ? (
+        {displayMode === "original" ? (
           /* Sandboxed Secure Iframe for Original HTML rendering */
           <div className="w-full rounded-xl overflow-hidden border border-border bg-white shadow-2xs">
             <iframe
