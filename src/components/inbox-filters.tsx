@@ -125,8 +125,8 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
                     className={cn(
                       "px-2.5 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors",
                       active
-                        ? "bg-[#244A3A] text-white font-semibold"
-                        : "bg-[#F0F2EB] text-[#252923] hover:bg-[#E5EBE1] border border-[#E1E5DC]"
+                        ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                        : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 border border-border"
                     )}
                   >
                     {sch}
@@ -138,7 +138,7 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
 
           {isCDC && (
             <div className="flex items-center gap-1.5 overflow-x-auto">
-              <span className="text-[#697168] font-medium shrink-0 flex items-center gap-1">
+              <span className="text-muted-foreground font-medium shrink-0 flex items-center gap-1">
                 <Briefcase className="h-3.5 w-3.5" />
                 Section:
               </span>
@@ -151,8 +151,8 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
                     className={cn(
                       "px-2.5 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-colors",
                       active
-                        ? "bg-[#244A3A] text-white font-semibold"
-                        : "bg-[#F0F2EB] text-[#252923] hover:bg-[#E5EBE1] border border-[#E1E5DC]"
+                        ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                        : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 border border-border"
                     )}
                   >
                     {sub.label}
@@ -166,7 +166,7 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
         {/* Priority Filter and Deadlines Quick Filter */}
         <div className="flex items-center gap-1.5 shrink-0 text-xs overflow-x-auto">
           {/* Priority Pill Filters */}
-          <div className="flex items-center p-0.5 rounded-lg bg-[#F0F2EB] border border-[#E1E5DC]">
+          <div className="flex items-center p-0.5 rounded-lg bg-muted border border-border">
             {PRIORITY_TABS.map((p) => {
               const active = currentPriority === p.value;
               return (
@@ -176,8 +176,8 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
                   className={cn(
                     "px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap",
                     active
-                      ? "bg-white text-[#244A3A] font-semibold shadow-xs"
-                      : "text-[#697168] hover:text-[#252923]"
+                      ? "bg-card text-foreground font-semibold shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {p.label}
@@ -192,11 +192,11 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
             className={cn(
               "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors whitespace-nowrap",
               hasDeadlines
-                ? "bg-[#E5EBE1] border-[#D3DCD0] text-[#244A3A] font-semibold"
-                : "border-[#E1E5DC] bg-white text-[#697168] hover:bg-[#F7F8F4] hover:text-[#252923]"
+                ? "bg-primary/10 border-primary/20 text-primary font-semibold"
+                : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
-            <Calendar className={cn("h-3.5 w-3.5", hasDeadlines ? "text-[#244A3A]" : "text-[#697168]")} />
+            <Calendar className={cn("h-3.5 w-3.5", hasDeadlines ? "text-primary" : "text-muted-foreground")} />
             <span>Deadlines Only</span>
           </Link>
 
@@ -204,10 +204,10 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
           <button
             onClick={() => setShowReclassifyAllModal(true)}
             disabled={reprocessing}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-[#D3DCD0] bg-white text-[#244A3A] hover:bg-[#F0F2EB] shadow-xs transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-primary/30 bg-card text-primary hover:bg-primary/10 shadow-xs transition-colors whitespace-nowrap"
             title="Re-run AI classification and deadline extraction across your mailbox"
           >
-            <Sparkles className={cn("h-3.5 w-3.5", reprocessing ? "animate-spin text-[#244A3A]" : "text-[#244A3A]")} />
+            <Sparkles className={cn("h-3.5 w-3.5", reprocessing ? "animate-spin text-primary" : "text-primary")} />
             <span>{reprocessing ? "Re-Classifying..." : "Re-Classify All"}</span>
           </button>
         </div>
@@ -215,17 +215,17 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
 
       {/* Confirmation Modal for Bulk Re-Classification */}
       {showReclassifyAllModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#E1E5DC] space-y-4 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="bg-card rounded-2xl max-w-md w-full p-6 shadow-xl border border-border space-y-4 animate-in zoom-in-95">
             <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-full bg-[#E5EBE1] border border-[#D3DCD0] flex items-center justify-center shrink-0 text-[#244A3A]">
+              <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-primary">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-bold text-base text-[#252923]">
+                <h3 className="font-bold text-base text-foreground">
                   Re-Classify University Mailbox?
                 </h3>
-                <p className="text-xs text-[#697168] leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   This will evaluate your emails against the latest classification rules, separate Transport from Hostel, extract deadlines, and re-calculate priority scores.
                   <br /><br />
                   <strong>Note:</strong> Any emails you manually locked will remain safely preserved.
@@ -233,11 +233,11 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#E1E5DC]">
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border">
               <button
                 type="button"
                 onClick={() => setShowReclassifyAllModal(false)}
-                className="px-3 py-1.5 text-xs font-medium text-[#697168] hover:text-[#252923] rounded-lg border border-[#E1E5DC]"
+                className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg border border-border"
               >
                 Cancel
               </button>
@@ -248,7 +248,7 @@ export function InboxFilters({ currentCategory }: { currentCategory?: string }) 
                   handleReprocess();
                 }}
                 disabled={reprocessing}
-                className="px-3 py-1.5 text-xs font-semibold text-white bg-[#244A3A] hover:bg-[#1b382c] rounded-lg shadow-xs"
+                className="px-3 py-1.5 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg shadow-xs"
               >
                 {reprocessing ? "Re-Classifying..." : "Start Reclassification"}
               </button>

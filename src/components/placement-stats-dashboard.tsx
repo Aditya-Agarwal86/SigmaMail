@@ -40,9 +40,9 @@ export function PlacementStatsDashboard({ stats, activeStat }: PlacementStatsDas
       count: stats.ongoingDrives,
       subtitle: "Active recruiting / tests",
       icon: Clock,
-      color: "text-amber-800",
-      activeBg: "bg-amber-100/70 border-amber-400 ring-2 ring-amber-500/20",
-      iconBg: "bg-amber-100 text-amber-800",
+      color: "text-amber-600 dark:text-amber-400",
+      activeBg: "bg-amber-500/15 border-amber-500 ring-2 ring-amber-500/20",
+      iconBg: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
     },
     {
       key: "upcoming",
@@ -50,9 +50,9 @@ export function PlacementStatsDashboard({ stats, activeStat }: PlacementStatsDas
       count: stats.upcomingDrives,
       subtitle: "Announced future drives",
       icon: Calendar,
-      color: "text-blue-800",
-      activeBg: "bg-blue-100/70 border-blue-400 ring-2 ring-blue-500/20",
-      iconBg: "bg-blue-100 text-blue-800",
+      color: "text-blue-600 dark:text-blue-400",
+      activeBg: "bg-blue-500/15 border-blue-500 ring-2 ring-blue-500/20",
+      iconBg: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
     },
     {
       key: "completed",
@@ -60,9 +60,9 @@ export function PlacementStatsDashboard({ stats, activeStat }: PlacementStatsDas
       count: stats.completedDrives,
       subtitle: "Shortlists & offers concluded",
       icon: CheckCircle,
-      color: "text-[#244A3A]",
-      activeBg: "bg-[#E5EBE1] border-[#244A3A] ring-2 ring-[#244A3A]/20",
-      iconBg: "bg-[#E5EBE1] text-[#244A3A]",
+      color: "text-primary",
+      activeBg: "bg-primary/15 border-primary ring-2 ring-primary/20",
+      iconBg: "bg-primary/15 text-primary",
     },
     {
       key: "closing_soon",
@@ -70,9 +70,9 @@ export function PlacementStatsDashboard({ stats, activeStat }: PlacementStatsDas
       count: stats.closingSoon,
       subtitle: "Deadlines in < 3 days",
       icon: AlertCircle,
-      color: "text-rose-800",
-      activeBg: "bg-rose-100/70 border-rose-400 ring-2 ring-rose-500/20",
-      iconBg: "bg-rose-100 text-rose-800",
+      color: "text-rose-600 dark:text-rose-400",
+      activeBg: "bg-rose-500/15 border-rose-500 ring-2 ring-rose-500/20",
+      iconBg: "bg-rose-500/15 text-rose-600 dark:text-rose-400",
     },
     {
       key: "total",
@@ -80,22 +80,22 @@ export function PlacementStatsDashboard({ stats, activeStat }: PlacementStatsDas
       count: stats.totalDrives,
       subtitle: "All identified company drives",
       icon: Briefcase,
-      color: "text-[#252923]",
-      activeBg: "bg-[#E5EBE1] border-[#244A3A] ring-2 ring-[#244A3A]/20",
-      iconBg: "bg-[#F0F2EB] text-[#252923]",
+      color: "text-foreground",
+      activeBg: "bg-primary/15 border-primary ring-2 ring-primary/20",
+      iconBg: "bg-muted text-foreground",
     },
   ];
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-bold text-[#697168] uppercase tracking-wider">
+        <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
           Placement Activity Overview
         </span>
         {activeStat && (
           <Link
             href={createFilterUrl(null)}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#244A3A] hover:underline"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
           >
             <X className="h-3 w-3" />
             <span>Clear Statistics Filter</span>
@@ -112,14 +112,14 @@ export function PlacementStatsDashboard({ stats, activeStat }: PlacementStatsDas
             <Link
               key={card.key}
               href={createFilterUrl(card.key)}
-              className={`p-3 rounded-xl border transition-all text-left flex flex-col justify-between group shadow-card ${
+              className={`p-3 rounded-xl border transition-all text-left flex flex-col justify-between group shadow-xs ${
                 isActive
-                  ? `${card.activeBg} shadow-sm`
-                  : "bg-white border-[#E1E5DC] hover:border-[#D3DCD0] hover:bg-[#FDFDFD]"
+                  ? `${card.activeBg}`
+                  : "bg-card border-border hover:border-primary/40 hover:bg-muted/40"
               }`}
             >
               <div className="flex items-center justify-between gap-1">
-                <span className="text-xs font-semibold text-[#252923] group-hover:text-[#244A3A] truncate">
+                <span className="text-xs font-semibold text-foreground group-hover:text-primary truncate">
                   {card.label}
                 </span>
                 <div
@@ -135,12 +135,12 @@ export function PlacementStatsDashboard({ stats, activeStat }: PlacementStatsDas
                     {card.count}
                   </span>
                   {isActive && (
-                    <span className="text-[10px] font-semibold text-[#244A3A] bg-white/80 px-1.5 py-0.2 rounded border border-[#D3DCD0]">
-                      Active Filter
+                    <span className="text-[10px] font-semibold text-primary bg-background/80 px-1.5 py-0.5 rounded border border-primary/30">
+                      Active
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-[#697168] mt-0.5 truncate">{card.subtitle}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{card.subtitle}</p>
               </div>
             </Link>
           );

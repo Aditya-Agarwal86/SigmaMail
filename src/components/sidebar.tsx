@@ -161,8 +161,9 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
   const [hiddenCategories, setHiddenCategories] = useState<string[]>([]);
   const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Load custom preferences on mount
+  // Load preferences and saved collapse state
   const fetchPreferences = () => {
     fetch("/api/categories/preferences")
       .then((res) => (res.ok ? res.json() : null))
@@ -178,7 +179,15 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
 
   useEffect(() => {
     fetchPreferences();
+    const savedCollapse = localStorage.getItem("sigmamail_sidebar_collapsed");
+    if (savedCollapse === "true") setIsCollapsed(true);
   }, []);
+
+  const toggleCollapse = () => {
+    const next = !isCollapsed;
+    setIsCollapsed(next);
+    localStorage.setItem("sigmamail_sidebar_collapsed", String(next));
+  };
 
   // Apply custom ordering, display names, and filter out hidden categories
   const orderedCategories = useMemo(() => {
@@ -199,69 +208,100 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
 
   return (
     <>
-      <aside className="w-64 border-r border-[#E1E5DC] bg-[#F0F2EB] flex flex-col justify-between shrink-0 overflow-hidden">
-        <div className="p-4 space-y-5 overflow-y-auto max-h-[calc(100vh-110px)]">
-          {/* Brand */}
-          <div className="flex items-center gap-3 px-2 pt-1">
-            <div className="h-9 w-9 rounded-xl bg-[#244A3A] flex items-center justify-center text-white shadow-xs">
-              <Mail className="h-4 w-4" />
-            </div>
-            <div>
-              <h1 className="font-bold text-[#252923] tracking-tight text-base">SigmaMail</h1>
-              <p className="text-[11px] text-[#697168] font-medium">vitapstudent.ac.in</p>
-            </div>
+      <aside
+        className={cn(
+          "border-r border-border bg-muted/50 flex flex-col justify-between shrink-0 overflow-hidden transition-all duration-300 relative",
+          isCollapsed ? "w-16" : "w-64"
+        )}
+      >
+        <div className="p-3.5 space-y-5 overflow-y-auto max-h-[calc(100vh-110px)]">
+          {/* Brand & Collapse Toggle */}
+          <div className="flex items-center justify-between px-1.5 pt-1">
+            <Link href="/" className="flex items-center gap-2.5 truncate group">
+              <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs shrink-0 transition-transform group-hover:scale-105">
+                <Mail className="h-4 w-4" />
+              </div>
+              {!isCollapsed && (
+                <div className="truncate">
+                  <h1 className="font-bold text-foreground tracking-tight text-base leading-none">
+                    SigmaMail
+                  </h1>
+                  <p className="text-[10px] text-muted-foreground font-medium mt-1">
+                    vitapstudent.ac.in
+                  </p>
+                </div>
+              )}
+            </Link>
           </div>
 
-          {/* Primary Views */}
+          {/* Primary Mailbox Navigation */}
           <nav className="space-y-1">
-            <p className="px-2 pb-1 text-[11px] font-semibold tracking-wider text-[#697168] uppercase">
-              Mailbox
-            </p>
+            {!isCollapsed && (
+              <p className="px-2 pb-1 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                Mailbox
+              </p>
+            )}
             {mainNavigation.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.name}
                   href={item.href}
+                  title={isCollapsed ? `${item.name} (${item.count})` : undefined}
                   className={cn(
-                    "flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center rounded-xl px-2.5 py-2 text-xs font-medium transition-all group relative",
+                    isCollapsed ? "justify-center" : "justify-between",
                     isActive
-                      ? "bg-[#E5EBE1] text-[#244A3A] font-semibold border border-[#D3DCD0]"
-                      : "text-[#252923] hover:bg-[#E5EBE1]/60"
+                      ? "bg-secondary text-primary font-bold border border-primary/25 shadow-xs"
+                      : "text-foreground hover:bg-secondary/40 hover:text-primary"
                   )}
                 >
-                  <div className="flex items-center gap-3">
-                    <item.icon className={cn("h-4 w-4", isActive ? "text-[#244A3A]" : "text-[#697168]")} />
-                    <span>{item.name}</span>
+                  <div className="flex items-center gap-2.5 truncate">
+                    <item.icon
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-transform group-hover:scale-110",
+                        isActive ? "text-primary stroke-[2.5]" : "text-muted-foreground"
+                      )}
+                    />
+                    {!isCollapsed && <span className="truncate">{item.name}</span>}
                   </div>
-                  {item.count > 0 && (
+                  {item.count > 0 && !isCollapsed && (
                     <span
                       className={cn(
-                        "rounded-full px-2 py-0.5 text-xs font-semibold",
-                        item.badgeColor || (isActive ? "bg-white text-[#244A3A]" : "bg-white/80 text-[#697168] border border-[#E1E5DC]")
+                        "rounded-full px-2 py-0.5 text-[11px] font-semibold border",
+                        isActive
+                          ? "bg-card text-primary border-primary/30"
+                          : "bg-card text-muted-foreground border-border"
                       )}
                     >
                       {item.count}
                     </span>
+                  )}
+                  {isCollapsed && item.count > 0 && (
+                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
                   )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Categories */}
+          {/* Categories Navigation */}
           <nav className="space-y-0.5">
             <div className="flex items-center justify-between px-2 pb-1.5">
-              <p className="text-[11px] font-semibold tracking-wider text-[#697168] uppercase">
-                Categories ({orderedCategories.length})
-              </p>
-              <button
-                onClick={() => setIsCategoryModalOpen(true)}
-                className="text-[11px] font-semibold text-[#244A3A] hover:underline flex items-center gap-1"
-                title="Edit, reorder, or hide categories"
-              >
-                Edit
-              </button>
+              {!isCollapsed && (
+                <>
+                  <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Categories ({orderedCategories.length})
+                  </p>
+                  <button
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 uppercase tracking-wider"
+                    title="Edit, reorder, rename, or hide categories"
+                  >
+                    Edit
+                  </button>
+                </>
+              )}
             </div>
             {orderedCategories.map((cat) => {
               const isActive = pathname === cat.href;
@@ -269,19 +309,33 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
                 <Link
                   key={cat.id}
                   href={cat.href}
+                  title={isCollapsed ? `${cat.name} (${cat.count})` : undefined}
                   className={cn(
-                    "flex items-center justify-between rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                    "flex items-center rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all group relative",
+                    isCollapsed ? "justify-center" : "justify-between",
                     isActive
-                      ? "bg-[#E5EBE1] text-[#244A3A] font-semibold border border-[#D3DCD0]"
-                      : "text-[#252923] hover:bg-[#E5EBE1]/50"
+                      ? "bg-secondary text-primary font-bold border border-primary/25 shadow-xs"
+                      : "text-foreground hover:bg-secondary/40 hover:text-primary"
                   )}
                 >
                   <div className="flex items-center gap-2.5 truncate">
-                    <cat.icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#244A3A]" : "text-[#697168]")} />
-                    <span className="truncate text-xs">{cat.name}</span>
+                    <cat.icon
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-transform group-hover:scale-110",
+                        isActive ? "text-primary stroke-[2.5]" : "text-muted-foreground"
+                      )}
+                    />
+                    {!isCollapsed && <span className="truncate text-xs">{cat.name}</span>}
                   </div>
-                  {cat.count > 0 && (
-                    <span className="text-[11px] text-[#697168] font-medium bg-white px-1.5 py-0.5 rounded-full border border-[#E1E5DC]">
+                  {cat.count > 0 && !isCollapsed && (
+                    <span
+                      className={cn(
+                        "text-[10px] font-medium px-1.5 py-0.2 rounded-full border",
+                        isActive
+                          ? "bg-card text-primary border-primary/30"
+                          : "bg-card text-muted-foreground border-border"
+                      )}
+                    >
                       {cat.count}
                     </span>
                   )}
@@ -291,46 +345,45 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
           </nav>
         </div>
 
-      {/* Footer / Settings */}
-      <div className="p-3 border-t border-[#E1E5DC] space-y-2 bg-[#F0F2EB]">
-        <Link
-          href="/settings"
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-1.5 text-sm font-medium text-[#252923] hover:bg-[#E5EBE1]/60 transition-colors",
-            pathname === "/settings" && "bg-[#E5EBE1] text-[#244A3A] font-semibold border border-[#D3DCD0]"
-          )}
-        >
-          <Settings className="h-4 w-4 text-[#697168]" />
-          <span>Settings</span>
-        </Link>
-        {isDemoUser ? (
-          <div className="px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
-            <div className="flex items-center gap-1.5 text-amber-900 font-semibold text-xs">
-              <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-amber-700" />
-              <span>Development Mode</span>
-            </div>
-          </div>
-        ) : (
-          <div className="px-2.5 py-1.5 rounded-lg bg-[#E5EBE1] border border-[#D3DCD0]">
-            <div className="flex items-center gap-1.5 text-[#244A3A] font-semibold text-xs">
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#244A3A]" />
-              <span>VIT-AP Sync Ready</span>
-            </div>
-          </div>
-        )}
-      </div>
-    </aside>
+        {/* Footer / Settings & Collapse Controls */}
+        <div className="p-3 border-t border-border space-y-2 bg-muted/40">
+          <Link
+            href="/settings"
+            title={isCollapsed ? "Settings" : undefined}
+            className={cn(
+              "flex items-center rounded-xl px-2.5 py-2 text-xs font-medium text-foreground hover:bg-secondary/50 transition-colors",
+              isCollapsed ? "justify-center" : "gap-2.5",
+              pathname === "/settings" && "bg-secondary text-primary font-bold border border-primary/25"
+            )}
+          >
+            <Settings className="h-4 w-4 text-muted-foreground shrink-0" />
+            {!isCollapsed && <span>Settings</span>}
+          </Link>
 
-    {/* Category Customization Modal */}
-    <CategoryManagerModal
-      isOpen={isCategoryModalOpen}
-      onClose={() => setIsCategoryModalOpen(false)}
-      categories={rawCategories}
-      hiddenCategories={hiddenCategories}
-      categoryOrder={categoryOrder}
-      categoryNames={categoryNames}
-      onPreferencesUpdated={fetchPreferences}
-    />
-  </>
+          {/* Sidebar Collapse Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleCollapse}
+            className="w-full flex items-center justify-center p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors text-xs font-medium"
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <span className="text-[11px] font-medium">
+              {isCollapsed ? "→" : "← Collapse Sidebar"}
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Category Customization Modal */}
+      <CategoryManagerModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        categories={rawCategories}
+        hiddenCategories={hiddenCategories}
+        categoryOrder={categoryOrder}
+        categoryNames={categoryNames}
+        onPreferencesUpdated={fetchPreferences}
+      />
+    </>
   );
 }

@@ -20,6 +20,8 @@ export async function GET() {
       categoryOrder: true,
       hiddenCategories: true,
       categoryNames: true,
+      appearanceMode: true,
+      colorTheme: true,
     },
   });
 
@@ -27,11 +29,13 @@ export async function GET() {
     categoryOrder: prefs?.categoryOrder || null,
     hiddenCategories: prefs?.hiddenCategories || [],
     categoryNames: prefs?.categoryNames || {},
+    appearanceMode: prefs?.appearanceMode || "system",
+    colorTheme: prefs?.colorTheme || "sigma-green",
   });
 }
 
 /**
- * POST / PUT: Update category order, hidden categories, and custom category display names.
+ * POST / PUT: Update category order, hidden categories, custom category display names, and theme preferences.
  */
 export async function POST(request: NextRequest) {
   const user = await getCurrentUser();
@@ -41,7 +45,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { categoryOrder, hiddenCategories, categoryNames, reset, resetNames } = body;
+    const {
+      categoryOrder,
+      hiddenCategories,
+      categoryNames,
+      appearanceMode,
+      colorTheme,
+      reset,
+      resetNames,
+    } = body;
 
     let updated;
     if (reset) {
@@ -51,12 +63,16 @@ export async function POST(request: NextRequest) {
           categoryOrder: Prisma.JsonNull,
           hiddenCategories: [],
           categoryNames: Prisma.JsonNull,
+          appearanceMode: "system",
+          colorTheme: "sigma-green",
         },
         create: {
           userId: user.id,
           categoryOrder: Prisma.JsonNull,
           hiddenCategories: [],
           categoryNames: Prisma.JsonNull,
+          appearanceMode: "system",
+          colorTheme: "sigma-green",
         },
       });
     } else if (resetNames) {
@@ -77,12 +93,16 @@ export async function POST(request: NextRequest) {
           categoryOrder: categoryOrder !== undefined ? categoryOrder : undefined,
           hiddenCategories: Array.isArray(hiddenCategories) ? hiddenCategories : undefined,
           categoryNames: categoryNames !== undefined ? categoryNames : undefined,
+          appearanceMode: appearanceMode !== undefined ? appearanceMode : undefined,
+          colorTheme: colorTheme !== undefined ? colorTheme : undefined,
         },
         create: {
           userId: user.id,
           categoryOrder: categoryOrder || Prisma.JsonNull,
           hiddenCategories: Array.isArray(hiddenCategories) ? hiddenCategories : [],
           categoryNames: categoryNames || Prisma.JsonNull,
+          appearanceMode: appearanceMode || "system",
+          colorTheme: colorTheme || "sigma-green",
         },
       });
     }
@@ -92,6 +112,8 @@ export async function POST(request: NextRequest) {
       categoryOrder: updated.categoryOrder,
       hiddenCategories: updated.hiddenCategories,
       categoryNames: updated.categoryNames || {},
+      appearanceMode: updated.appearanceMode,
+      colorTheme: updated.colorTheme,
     });
   } catch (err: any) {
     console.error("Error updating category preferences:", err);

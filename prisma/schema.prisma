@@ -128,6 +128,8 @@ model UserPreference {
   categoryOrder         Json?       // Custom ordered list of category strings e.g. ["ACADEMICS", "EXAMINATIONS", ...]
   hiddenCategories      String[]    @default([]) // Array of category keys hidden by user
   categoryNames         Json?       // Custom display names map e.g. {"ACADEMICS": "My Academics"}
+  appearanceMode        String      @default("system") // "light" | "dark" | "system"
+  colorTheme            String      @default("sigma-green") // "sigma-green" | "ocean-blue" | "royal-purple" | "sunset-orange" | "rose-pink" | "emerald" | "teal" | "midnight"
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
 }

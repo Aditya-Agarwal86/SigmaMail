@@ -58,7 +58,7 @@ export default async function EmailDetailPage({ params, searchParams }: EmailVie
   const backToCategoryHref = isSafeRelativeUrl ? returnUrl : categoryFallbackUrl;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#F7F8F4]">
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground transition-colors duration-200">
       <Sidebar stats={stats} isDemoUser={isDemoUser} />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
@@ -85,16 +85,16 @@ export default async function EmailDetailPage({ params, searchParams }: EmailVie
 
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#697168] bg-white border border-[#E1E5DC] hover:bg-[#F7F8F4] hover:text-[#252923] transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-card border border-border hover:bg-muted hover:text-foreground transition-colors"
             >
               <span>Inbox Stream</span>
             </Link>
           </div>
 
           {/* Email Container Card */}
-          <div className="bg-white rounded-2xl border border-[#E1E5DC] shadow-card overflow-hidden">
+          <div className="bg-card rounded-2xl border border-border shadow-xs overflow-hidden">
             {/* Header Area */}
-            <div className="p-6 border-b border-[#E1E5DC] space-y-4">
+            <div className="p-6 border-b border-border space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2 flex-wrap text-xs">
                   <span
@@ -123,56 +123,56 @@ export default async function EmailDetailPage({ params, searchParams }: EmailVie
                   )}
 
                   {email.school && (
-                    <span className="px-2 py-0.5 rounded-md font-medium text-xs bg-[#F0F2EB] text-[#252923] border border-[#E1E5DC]">
+                    <span className="px-2 py-0.5 rounded-md font-medium text-xs bg-muted text-foreground border border-border">
                       {email.school}
                     </span>
                   )}
                 </div>
 
-                <div className="text-xs text-[#697168] font-medium">
+                <div className="text-xs text-muted-foreground font-medium">
                   {formatDate(email.receivedAt)}
                 </div>
               </div>
 
-              <h1 className="text-xl sm:text-2xl font-bold text-[#252923] tracking-tight leading-snug">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-snug">
                 {email.subject}
               </h1>
 
-              <div className="flex items-center justify-between gap-4 pt-1 text-xs text-[#697168]">
+              <div className="flex items-center justify-between gap-4 pt-1 text-xs text-muted-foreground">
                 <div>
-                  <span className="font-semibold text-[#252923]">From: </span>
-                  <span className="font-medium text-[#252923]">{email.sender}</span>
+                  <span className="font-semibold text-foreground">From: </span>
+                  <span className="font-medium text-foreground">{email.sender}</span>
                   {email.senderAddress && (
-                    <span className="text-[#697168] ml-1 font-mono text-[11px]">
+                    <span className="text-muted-foreground ml-1 font-mono text-[11px]">
                       &lt;{email.senderAddress}&gt;
                     </span>
                   )}
                 </div>
 
                 {email.isManualOverride && (
-                  <span className="px-2 py-0.5 rounded-md bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0] text-[11px] font-medium">
+                  <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium">
                     Category Locked by Student
                   </span>
                 )}
               </div>
 
               {/* Action Toolbar: Re-Classify Button, Quick Controls */}
-              <div className="flex items-center justify-between pt-2 border-t border-[#E1E5DC] flex-wrap gap-2">
+              <div className="flex items-center justify-between pt-2 border-t border-border flex-wrap gap-2">
                 <ReclassifyEmailButton
                   emailId={email.id}
                   isManualOverride={email.isManualOverride}
                   currentCategoryName={meta.label}
                 />
 
-                <div className="flex items-center gap-2 text-xs text-[#697168]">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="font-medium">Confidence:</span>
                   <span
                     className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${
                       email.confidenceTier === "HIGH"
-                        ? "bg-[#E5EBE1] text-[#244A3A] border-[#D3DCD0]"
+                        ? "bg-primary/10 text-primary border-primary/20"
                         : email.confidenceTier === "MEDIUM"
-                        ? "bg-amber-50 text-amber-900 border-amber-200"
-                        : "bg-rose-50 text-rose-700 border-rose-200"
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                        : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
                     }`}
                   >
                     {email.confidenceTier} ({Math.round(email.classificationConfidence * 100)}%)
@@ -183,17 +183,17 @@ export default async function EmailDetailPage({ params, searchParams }: EmailVie
 
             {/* AI Summary Banner if present */}
             {email.aiSummary && (
-              <div className="p-4 bg-[#F7F8F4] border-b border-[#E1E5DC] flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-[#244A3A] shrink-0 mt-0.5" />
-                <div className="text-xs text-[#252923] space-y-1">
-                  <h4 className="font-semibold text-[#244A3A]">Executive Summary</h4>
-                  <p className="leading-relaxed">{email.aiSummary}</p>
+              <div className="p-4 bg-muted/30 border-b border-border flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div className="text-xs text-foreground space-y-1">
+                  <h4 className="font-semibold text-primary">Executive Summary</h4>
+                  <p className="leading-relaxed text-muted-foreground">{email.aiSummary}</p>
                 </div>
               </div>
             )}
 
             {/* Body */}
-            <div className="p-6 text-sm text-[#252923] leading-relaxed whitespace-pre-wrap font-sans">
+            <div className="p-6 text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
               {email.bodyPlain || email.snippet}
             </div>
           </div>

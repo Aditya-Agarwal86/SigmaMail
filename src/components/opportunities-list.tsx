@@ -166,12 +166,12 @@ export function OpportunitiesList({ opportunities, currentCategoryUrl, stats }: 
 
       {/* 2. Opportunities Cards List */}
       {opportunities.length === 0 ? (
-        <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
-          <Building2 className="mx-auto h-8 w-8 text-[#697168] mb-2" />
-          <h3 className="text-sm font-semibold text-[#252923]">
+        <div className="p-12 text-center rounded-xl border border-dashed border-border bg-card">
+          <Building2 className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+          <h3 className="text-sm font-semibold text-foreground">
             No Placement Opportunities Matching Filter
           </h3>
-          <p className="text-xs text-[#697168] mt-1 max-w-sm mx-auto">
+          <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
             Try adjusting your search criteria or clear active placement filters.
           </p>
         </div>
@@ -183,38 +183,38 @@ export function OpportunitiesList({ opportunities, currentCategoryUrl, stats }: 
             return (
               <div
                 key={opp.id}
-                className="bg-white border border-[#E1E5DC] rounded-xl p-5 shadow-card space-y-4 hover:border-[#D3DCD0] transition-colors"
+                className="bg-card border border-border rounded-xl p-5 shadow-xs space-y-4 hover:border-primary/40 transition-colors"
               >
                 {/* Header: Company, Batch, CTC, Role */}
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-[#E1E5DC] pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-border pb-3">
                   <div className="flex items-start gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-[#E5EBE1] border border-[#D3DCD0] flex items-center justify-center font-bold text-base text-[#244A3A] shrink-0">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-base text-primary shrink-0">
                       {opp.companyName.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-lg text-[#252923] tracking-tight">
+                        <h3 className="font-bold text-lg text-foreground tracking-tight">
                           {opp.companyName}
                         </h3>
                         {opp.batchCycle && (
-                          <span className="text-[11px] font-medium text-[#697168] bg-[#F0F2EB] px-2 py-0.5 rounded-full border border-[#E1E5DC]">
+                          <span className="text-[11px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
                             Batch {opp.batchCycle}
                           </span>
                         )}
                         {opp.ctc && (
-                          <span className="text-[11px] font-bold text-[#244A3A] bg-[#E5EBE1] px-2 py-0.5 rounded-full border border-[#D3DCD0]">
+                          <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
                             {opp.ctc}
                           </span>
                         )}
                       </div>
 
                       {opp.jobRole && (
-                        <p className="text-xs font-semibold text-[#252923] mt-0.5">
+                        <p className="text-xs font-semibold text-foreground mt-0.5">
                           Role: {opp.jobRole}
                         </p>
                       )}
 
-                      <p className="text-[11px] text-[#697168] mt-0.5">
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
                         Last activity: {formatDistanceToNow(new Date(opp.lastActivityAt), { addSuffix: true })}
                       </p>
                     </div>
@@ -229,16 +229,16 @@ export function OpportunitiesList({ opportunities, currentCategoryUrl, stats }: 
                     </span>
 
                     {/* Student Status Dropdown Tracker */}
-                    <div className="flex items-center gap-1.5 bg-[#F7F8F4] px-2 py-1 rounded-lg border border-[#E1E5DC] text-xs">
-                      <span className="text-[#697168] text-[11px] font-medium">My Status:</span>
+                    <div className="flex items-center gap-1.5 bg-muted/60 px-2.5 py-1 rounded-lg border border-border text-xs">
+                      <span className="text-muted-foreground text-[11px] font-medium">My Status:</span>
                       <select
                         value={opp.studentStatus}
                         onChange={(e) => handleStatusChange(opp.id, e.target.value as StudentApplicationStatus)}
                         disabled={updatingId === opp.id}
-                        className="text-xs font-semibold bg-transparent text-[#252923] focus:outline-hidden cursor-pointer"
+                        className="text-xs font-semibold bg-transparent text-foreground focus:outline-hidden cursor-pointer"
                       >
                         {Object.entries(STUDENT_STATUS_LABELS).map(([statusKey, cfg]) => (
-                          <option key={statusKey} value={statusKey}>
+                          <option key={statusKey} value={statusKey} className="bg-card text-foreground">
                             {cfg.label}
                           </option>
                         ))}
@@ -248,31 +248,31 @@ export function OpportunitiesList({ opportunities, currentCategoryUrl, stats }: 
                 </div>
 
                 {/* Extracted Opportunity Details (Section 6C) */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-[#F7F8F4] p-3 rounded-lg border border-[#E1E5DC]">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-muted/30 p-3 rounded-lg border border-border">
                   <div>
-                    <span className="text-[#697168] block text-[10px] uppercase font-semibold">Eligibility</span>
-                    <span className="font-medium text-[#252923]">
+                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Eligibility</span>
+                    <span className="font-medium text-foreground">
                       {opp.eligibleBranches.length > 0 ? opp.eligibleBranches.join(", ") : "Not Specified"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[#697168] block text-[10px] uppercase font-semibold">Min CGPA</span>
-                    <span className="font-medium text-[#252923]">
+                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Min CGPA</span>
+                    <span className="font-medium text-foreground">
                       {opp.minCgpa !== null ? `>= ${opp.minCgpa}` : "Not Specified"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[#697168] block text-[10px] uppercase font-semibold">Stipend</span>
-                    <span className="font-medium text-[#252923]">
+                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Stipend</span>
+                    <span className="font-medium text-foreground">
                       {opp.stipend || "Not Specified"}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[#697168] block text-[10px] uppercase font-semibold">Location</span>
-                    <span className="font-medium text-[#252923]">
+                    <span className="text-muted-foreground block text-[10px] uppercase font-semibold">Location</span>
+                    <span className="font-medium text-foreground">
                       {opp.jobLocation || "Not Specified"}
                     </span>
                   </div>
@@ -280,15 +280,15 @@ export function OpportunitiesList({ opportunities, currentCategoryUrl, stats }: 
 
                 {/* Status Snippet */}
                 {opp.statusSnippet && (
-                  <p className="text-xs text-[#252923] bg-white p-3 rounded-lg border border-[#E1E5DC] leading-relaxed">
-                    <strong>Latest Update:</strong> {opp.statusSnippet}
+                  <p className="text-xs text-foreground bg-muted/40 p-3 rounded-lg border border-border leading-relaxed">
+                    <strong className="text-foreground">Latest Update:</strong> {opp.statusSnippet}
                   </p>
                 )}
 
                 {/* Grouped Communications */}
                 <div className="space-y-2">
-                  <h4 className="text-[11px] font-semibold text-[#697168] uppercase tracking-wider flex items-center gap-1.5">
-                    <Layers className="h-3.5 w-3.5 text-[#244A3A]" />
+                  <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <Layers className="h-3.5 w-3.5 text-primary" />
                     <span>Related Announcements & Updates ({opp.emails.length})</span>
                   </h4>
 
@@ -297,17 +297,17 @@ export function OpportunitiesList({ opportunities, currentCategoryUrl, stats }: 
                       <Link
                         key={e.id}
                         href={`/email/${e.id}?returnUrl=${encodeURIComponent(currentCategoryUrl)}`}
-                        className="flex items-center justify-between p-2.5 rounded-lg border border-[#E1E5DC] bg-[#F9FAF7] hover:bg-[#F0F2EB] transition-colors text-xs text-[#252923] group"
+                        className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-xs text-foreground group"
                       >
                         <div className="flex items-center gap-2 truncate min-w-0 pr-2">
-                          <span className="truncate font-medium group-hover:text-[#244A3A] transition-colors">
+                          <span className="truncate font-medium group-hover:text-primary transition-colors">
                             {e.subject}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2.5 shrink-0 text-[11px] text-[#697168]">
+                        <div className="flex items-center gap-2.5 shrink-0 text-[11px] text-muted-foreground">
                           <span>{new Date(e.receivedAt).toLocaleDateString()}</span>
-                          <ChevronRight className="h-3.5 w-3.5 text-[#697168] group-hover:text-[#244A3A] group-hover:translate-x-0.5 transition-all" />
+                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                         </div>
                       </Link>
                     ))}

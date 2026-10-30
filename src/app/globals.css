@@ -4,67 +4,196 @@
 
 @layer base {
   :root {
-    /* SigmaMail Premium Light Palette:
-       Background: Warm Ivory (#F7F8F4) -> 75 14% 96.5%
-       Surface/Card: Pure White (#FFFFFF) -> 0 0% 100%
-       Sidebar: Soft Sage-White (#F0F2EB) -> 80 14% 94%
-       Foreground: Deep Charcoal (#252923) -> 100 8% 15%
-       Muted Foreground: Muted Charcoal (#697168) -> 110 4% 43%
-       Border: Soft Grey-Green (#E1E5DC) -> 90 12% 88%
-       Primary: Deep Forest Green (#244A3A) -> 155 35% 22%
-       Primary Foreground: #FFFFFF
-       Subtle Accent: Pale Sage (#E5EBE1) -> 96 18% 90%
-       Accent Foreground: Deep Forest Green (#1B382C) -> 155 35% 16%
-    */
-    --background: 75 14% 96.5%;
-    --foreground: 100 8% 15%;
-    --card: 0 0% 100%;
+    /* Base Light Neutral Palette */
+    --background: 75 14% 96.5%;     /* #F7F8F4 soft ivory */
+    --foreground: 100 8% 15%;      /* #252923 deep charcoal */
+    --card: 0 0% 100%;             /* #FFFFFF */
     --card-foreground: 100 8% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 100 8% 15%;
-    
-    --primary: 155 35% 22%;
-    --primary-foreground: 0 0% 100%;
-    
-    --secondary: 96 18% 90%;
-    --secondary-foreground: 155 35% 16%;
-    
-    --muted: 80 14% 94%;
-    --muted-foreground: 110 4% 43%;
-    
-    --accent: 96 18% 90%;
-    --accent-foreground: 155 35% 16%;
-    
+    --muted: 80 14% 94%;           /* #F0F2EB sidebar/muted */
+    --muted-foreground: 110 4% 43%;/* #697168 */
+    --border: 90 12% 88%;          /* #E1E5DC soft border */
+    --input: 90 12% 88%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    
-    --border: 90 12% 88%;
-    --input: 90 12% 88%;
+    --radius: 0.625rem;
+
+    /* Default Theme Accent: Sigma Green */
+    --primary: 155 35% 22%;        /* #244A3A deep forest */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 96 18% 90%;       /* #E5EBE1 pale sage */
+    --secondary-foreground: 155 35% 16%;
+    --accent: 96 18% 90%;
+    --accent-foreground: 155 35% 16%;
     --ring: 155 35% 22%;
-    --radius: 0.5rem;
   }
 
-  /* Support consistent light mode styling even if dark class is present */
+  /* Accent Color Themes (Light Mode) */
+  [data-theme="ocean-blue"] {
+    --primary: 215 75% 35%;
+    --secondary: 210 50% 92%;
+    --secondary-foreground: 215 75% 25%;
+    --accent: 210 50% 92%;
+    --accent-foreground: 215 75% 25%;
+    --ring: 215 75% 35%;
+  }
+
+  [data-theme="royal-purple"] {
+    --primary: 270 55% 38%;
+    --secondary: 270 40% 93%;
+    --secondary-foreground: 270 60% 25%;
+    --accent: 270 40% 93%;
+    --accent-foreground: 270 60% 25%;
+    --ring: 270 55% 38%;
+  }
+
+  [data-theme="sunset-orange"] {
+    --primary: 24 85% 42%;
+    --secondary: 28 75% 93%;
+    --secondary-foreground: 24 85% 25%;
+    --accent: 28 75% 93%;
+    --accent-foreground: 24 85% 25%;
+    --ring: 24 85% 42%;
+  }
+
+  [data-theme="rose-pink"] {
+    --primary: 345 65% 44%;
+    --secondary: 345 50% 93%;
+    --secondary-foreground: 345 70% 26%;
+    --accent: 345 50% 93%;
+    --accent-foreground: 345 70% 26%;
+    --ring: 345 65% 44%;
+  }
+
+  [data-theme="emerald"] {
+    --primary: 160 84% 28%;
+    --secondary: 155 45% 91%;
+    --secondary-foreground: 160 84% 18%;
+    --accent: 155 45% 91%;
+    --accent-foreground: 160 84% 18%;
+    --ring: 160 84% 28%;
+  }
+
+  [data-theme="teal"] {
+    --primary: 178 70% 30%;
+    --secondary: 178 45% 92%;
+    --secondary-foreground: 178 75% 18%;
+    --accent: 178 45% 92%;
+    --accent-foreground: 178 75% 18%;
+    --ring: 178 70% 30%;
+  }
+
+  [data-theme="midnight"] {
+    --primary: 224 64% 33%;
+    --secondary: 220 35% 92%;
+    --secondary-foreground: 224 64% 20%;
+    --accent: 220 35% 92%;
+    --accent-foreground: 224 64% 20%;
+    --ring: 224 64% 33%;
+  }
+
+  /* Deep Charcoal Refined Dark Mode */
   .dark {
-    --background: 75 14% 96.5%;
-    --foreground: 100 8% 15%;
-    --card: 0 0% 100%;
-    --card-foreground: 100 8% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 100 8% 15%;
-    --primary: 155 35% 22%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 96 18% 90%;
-    --secondary-foreground: 155 35% 16%;
-    --muted: 80 14% 94%;
-    --muted-foreground: 110 4% 43%;
-    --accent: 96 18% 90%;
-    --accent-foreground: 155 35% 16%;
-    --destructive: 0 72% 51%;
+    --background: 220 16% 12%;      /* #181B20 deep charcoal */
+    --foreground: 210 20% 94%;      /* #EDF1F5 crisp readable light */
+    --card: 220 16% 16%;            /* #20242B elevated card */
+    --card-foreground: 210 20% 94%;
+    --popover: 220 16% 16%;
+    --popover-foreground: 210 20% 94%;
+    --muted: 220 14% 19%;           /* #282D36 sidebar/muted */
+    --muted-foreground: 215 12% 62%;/* #8C96A5 */
+    --border: 220 14% 23%;          /* #313742 subtle clean border */
+    --input: 220 14% 23%;
+    --destructive: 0 62% 48%;
     --destructive-foreground: 0 0% 100%;
-    --border: 90 12% 88%;
-    --input: 90 12% 88%;
-    --ring: 155 35% 22%;
+
+    /* Default Dark Mode Accent: Vibrant Sigma Green */
+    --primary: 155 55% 42%;         /* #30A678 bright legible green */
+    --primary-foreground: 155 60% 8%;
+    --secondary: 155 25% 20%;
+    --secondary-foreground: 150 45% 85%;
+    --accent: 155 25% 20%;
+    --accent-foreground: 150 45% 85%;
+    --ring: 155 55% 42%;
+  }
+
+  /* Accent Color Themes (Dark Mode) */
+  .dark[data-theme="ocean-blue"],
+  [data-theme="ocean-blue"].dark {
+    --primary: 212 90% 58%;
+    --primary-foreground: 215 75% 8%;
+    --secondary: 215 35% 22%;
+    --secondary-foreground: 210 65% 88%;
+    --accent: 215 35% 22%;
+    --accent-foreground: 210 65% 88%;
+    --ring: 212 90% 58%;
+  }
+
+  .dark[data-theme="royal-purple"],
+  [data-theme="royal-purple"].dark {
+    --primary: 270 70% 64%;
+    --primary-foreground: 270 60% 8%;
+    --secondary: 270 30% 22%;
+    --secondary-foreground: 270 50% 90%;
+    --accent: 270 30% 22%;
+    --accent-foreground: 270 50% 90%;
+    --ring: 270 70% 64%;
+  }
+
+  .dark[data-theme="sunset-orange"],
+  [data-theme="sunset-orange"].dark {
+    --primary: 24 95% 58%;
+    --primary-foreground: 24 90% 8%;
+    --secondary: 24 35% 22%;
+    --secondary-foreground: 24 60% 90%;
+    --accent: 24 35% 22%;
+    --accent-foreground: 24 60% 90%;
+    --ring: 24 95% 58%;
+  }
+
+  .dark[data-theme="rose-pink"],
+  [data-theme="rose-pink"].dark {
+    --primary: 345 80% 62%;
+    --primary-foreground: 345 70% 8%;
+    --secondary: 345 30% 22%;
+    --secondary-foreground: 345 50% 90%;
+    --accent: 345 30% 22%;
+    --accent-foreground: 345 50% 90%;
+    --ring: 345 80% 62%;
+  }
+
+  .dark[data-theme="emerald"],
+  [data-theme="emerald"].dark {
+    --primary: 158 75% 45%;
+    --primary-foreground: 160 80% 8%;
+    --secondary: 158 30% 20%;
+    --secondary-foreground: 158 50% 88%;
+    --accent: 158 30% 20%;
+    --accent-foreground: 158 50% 88%;
+    --ring: 158 75% 45%;
+  }
+
+  .dark[data-theme="teal"],
+  [data-theme="teal"].dark {
+    --primary: 178 75% 45%;
+    --primary-foreground: 178 80% 8%;
+    --secondary: 178 30% 20%;
+    --secondary-foreground: 178 50% 88%;
+    --accent: 178 30% 20%;
+    --accent-foreground: 178 50% 88%;
+    --ring: 178 75% 45%;
+  }
+
+  .dark[data-theme="midnight"],
+  [data-theme="midnight"].dark {
+    --primary: 218 85% 62%;
+    --primary-foreground: 220 80% 8%;
+    --secondary: 220 30% 22%;
+    --secondary-foreground: 218 60% 90%;
+    --accent: 220 30% 22%;
+    --accent-foreground: 218 60% 90%;
+    --ring: 218 85% 62%;
   }
 }
 
@@ -73,9 +202,31 @@
     @apply border-border;
   }
   body {
-    background-color: #F7F8F4;
-    color: #252923;
-    @apply antialiased;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    @apply antialiased transition-colors duration-200;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Slim, Theme-Aware, Premium Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.25);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.45);
+  }
+
+  /* Firefox scrollbar support */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.25) transparent;
   }
 }

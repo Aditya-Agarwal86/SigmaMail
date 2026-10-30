@@ -149,7 +149,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const categoryDisplayName = customNamesMap[categoryEnum] || meta.label;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#F7F8F4]">
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground transition-colors duration-200">
       <Sidebar stats={stats} isDemoUser={isDemoUser} />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
@@ -157,7 +157,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
         <main className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto space-y-4 w-full">
           {/* Category Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E1E5DC]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
             <div className="flex items-center gap-3">
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-lg font-semibold text-sm border ${meta.bg} ${meta.color} ${meta.border}`}
@@ -165,10 +165,10 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                 {categoryDisplayName}
               </span>
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-[#252923]">
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
                   {categoryDisplayName} Feed
                 </h2>
-                <p className="text-xs text-[#697168]">
+                <p className="text-xs text-muted-foreground">
                   Verified university announcements categorized under {categoryDisplayName}
                 </p>
               </div>
@@ -177,13 +177,13 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             <div className="flex items-center gap-2">
               {/* CDC-Specific Toggle: Feed vs Tracked Company Opportunities */}
               {isCDC && (
-                <div className="flex items-center p-0.5 rounded-lg bg-[#F0F2EB] border border-[#E1E5DC] text-xs">
+                <div className="flex items-center p-0.5 rounded-lg bg-muted border border-border text-xs">
                   <Link
                     href={`/categories/${categoryEnum}`}
                     className={`px-3 py-1 rounded-md font-medium transition-colors ${
                       !isOpportunitiesView
-                        ? "bg-white text-[#244A3A] font-semibold shadow-xs"
-                        : "text-[#697168] hover:text-[#252923]"
+                        ? "bg-card text-foreground font-semibold shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     Email Stream
@@ -192,8 +192,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                     href={`/categories/${categoryEnum}?view=opportunities`}
                     className={`px-3 py-1 rounded-md font-medium transition-colors flex items-center gap-1.5 ${
                       isOpportunitiesView
-                        ? "bg-white text-[#244A3A] font-semibold shadow-xs"
-                        : "text-[#697168] hover:text-[#252923]"
+                        ? "bg-card text-foreground font-semibold shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     <Building2 className="h-3.5 w-3.5" />
@@ -202,7 +202,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                 </div>
               )}
 
-              <span className="text-xs font-medium text-[#697168]">
+              <span className="text-xs font-medium text-muted-foreground">
                 {totalCount} Total Items
               </span>
             </div>
@@ -244,16 +244,16 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               stats={oppsData.stats}
             />
           ) : emails.length === 0 ? (
-            <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
-              <Briefcase className="h-10 w-10 text-[#697168] mx-auto mb-3" />
-              <h3 className="text-sm font-semibold text-[#252923]">No messages in this category</h3>
-              <p className="text-xs text-[#697168] mt-1">
+            <div className="p-12 text-center rounded-xl border border-dashed border-border bg-card">
+              <Briefcase className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <h3 className="text-sm font-semibold text-foreground">No messages in this category</h3>
+              <p className="text-xs text-muted-foreground mt-1">
                 New emails matching {meta.label} will appear here automatically.
               </p>
             </div>
           ) : (
             <>
-              <div className="bg-white rounded-xl shadow-card border border-[#E1E5DC] overflow-hidden">
+              <div className="bg-card rounded-xl shadow-xs border border-border overflow-hidden divide-y divide-border">
                 {emails.map((email) => (
                   <EmailCard
                     key={email.id}
@@ -265,7 +265,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-2 pb-6 text-xs text-[#697168]">
+                <div className="flex items-center justify-between pt-2 pb-6 text-xs text-muted-foreground">
                   <span>
                     Page {page} of {totalPages} ({totalCount} total)
                   </span>
@@ -273,7 +273,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                     {page > 1 && (
                       <Link
                         href={`/categories/${categoryEnum}?page=${page - 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${placementStat ? `&placementStat=${encodeURIComponent(placementStat)}` : ""}${isOpportunitiesView ? "&view=opportunities" : ""}`}
-                        className="px-3 py-1.5 rounded-lg border border-[#E1E5DC] bg-white text-[#252923] hover:bg-[#F7F8F4] flex items-center gap-1 font-medium transition-colors"
+                        className="px-3 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted flex items-center gap-1 font-medium transition-colors"
                       >
                         <ChevronLeft className="h-4 w-4" /> Previous
                       </Link>
@@ -281,7 +281,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                     {page < totalPages && (
                       <Link
                         href={`/categories/${categoryEnum}?page=${page + 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${placementStat ? `&placementStat=${encodeURIComponent(placementStat)}` : ""}${isOpportunitiesView ? "&view=opportunities" : ""}`}
-                        className="px-3 py-1.5 rounded-lg border border-[#E1E5DC] bg-white text-[#252923] hover:bg-[#F7F8F4] flex items-center gap-1 font-medium transition-colors"
+                        className="px-3 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted flex items-center gap-1 font-medium transition-colors"
                       >
                         Next <ChevronRight className="h-4 w-4" />
                       </Link>

@@ -29,40 +29,40 @@ export default async function DeadlinesPage() {
   ).length;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#F7F8F4]">
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground transition-colors duration-200">
       <Sidebar stats={stats} isDemoUser={isDemoUser} />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Header user={user} isDemoUser={isDemoUser} />
 
         <main className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto space-y-4 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E1E5DC]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
             <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-[#E5EBE1] border border-[#D3DCD0] flex items-center justify-center text-[#244A3A]">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
                 <Calendar className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-[#252923]">
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
                   Academic & Placement Deadlines
                 </h2>
-                <p className="text-xs text-[#697168]">
+                <p className="text-xs text-muted-foreground">
                   Extracted automatically from official university notifications & circulars
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               {confirmedActiveCount > 0 && (
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0]">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                   {confirmedActiveCount} Active
                 </span>
               )}
               {activeCandidatesCount > 0 && (
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                   {activeCandidatesCount} Candidates
                 </span>
               )}
               {historicalCandidatesCount > 0 && (
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium text-[#697168] bg-[#F0F2EB] border border-[#E1E5DC]">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium text-muted-foreground bg-muted border border-border">
                   {historicalCandidatesCount} Archived
                 </span>
               )}
