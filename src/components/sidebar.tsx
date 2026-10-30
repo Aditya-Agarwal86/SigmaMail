@@ -159,6 +159,7 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
 
   const [categoryOrder, setCategoryOrder] = useState<string[] | null>(null);
   const [hiddenCategories, setHiddenCategories] = useState<string[]>([]);
+  const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   // Load custom preferences on mount
@@ -169,6 +170,7 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
         if (data) {
           if (Array.isArray(data.categoryOrder)) setCategoryOrder(data.categoryOrder);
           if (Array.isArray(data.hiddenCategories)) setHiddenCategories(data.hiddenCategories);
+          if (data.categoryNames && typeof data.categoryNames === "object") setCategoryNames(data.categoryNames);
         }
       })
       .catch(() => {});
@@ -178,9 +180,12 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
     fetchPreferences();
   }, []);
 
-  // Apply custom ordering and filter out hidden categories
+  // Apply custom ordering, display names, and filter out hidden categories
   const orderedCategories = useMemo(() => {
-    const list = [...rawCategories];
+    const list = rawCategories.map((cat) => ({
+      ...cat,
+      name: categoryNames[cat.id] || cat.name,
+    }));
     if (categoryOrder && categoryOrder.length > 0) {
       const orderMap = new Map(categoryOrder.map((id, index) => [id, index]));
       list.sort((a, b) => {
@@ -190,7 +195,7 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
       });
     }
     return list.filter((cat) => !hiddenCategories.includes(cat.id));
-  }, [categoryOrder, hiddenCategories, stats]);
+  }, [categoryOrder, hiddenCategories, categoryNames, stats]);
 
   return (
     <>
@@ -323,6 +328,7 @@ export function Sidebar({ stats, isDemoUser }: SidebarProps) {
       categories={rawCategories}
       hiddenCategories={hiddenCategories}
       categoryOrder={categoryOrder}
+      categoryNames={categoryNames}
       onPreferencesUpdated={fetchPreferences}
     />
   </>

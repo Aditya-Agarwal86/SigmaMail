@@ -18,6 +18,7 @@ export interface GetEmailsParams {
   unknownFaculty?: boolean;
   query?: string;
   opportunityId?: string;
+  placementStat?: "ongoing" | "upcoming" | "completed" | "closing_soon" | "total";
   page?: number;
   pageSize?: number;
 }
@@ -89,6 +90,34 @@ export async function getEmails(params?: GetEmailsParams) {
 
   if (params?.opportunityId) {
     whereClause.opportunityId = params.opportunityId;
+  }
+
+  if (params?.placementStat) {
+    const now = new Date();
+    const threeDaysAhead = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+    if (params.placementStat === "ongoing") {
+      whereClause.opportunity = {
+        currentStage: { in: ["REGISTRATION_OPEN", "ASSESSMENT_SCHEDULED", "INTERVIEW_SCHEDULED"] },
+      };
+    } else if (params.placementStat === "upcoming") {
+      whereClause.opportunity = {
+        currentStage: { in: ["DRIVE_ANNOUNCED", "PRE_PLACEMENT_TALK"] },
+      };
+    } else if (params.placementStat === "completed") {
+      whereClause.opportunity = {
+        currentStage: { in: ["SHORTLIST_ANNOUNCED", "OFFER_CONGRATULATIONS"] },
+      };
+    } else if (params.placementStat === "closing_soon") {
+      whereClause.opportunity = {
+        applicationDeadline: {
+          gte: now,
+          lte: threeDaysAhead,
+        },
+      };
+    } else if (params.placementStat === "total") {
+      whereClause.opportunityId = { not: null };
+    }
   }
 
   const page = Math.max(1, params?.page || 1);
@@ -199,7 +228,9 @@ export async function getOpportunities(userIdParam?: string, options: GetOpportu
   const placementStats = {
     upcomingDrives: allUserOpps.filter((o) => o.currentStage === "DRIVE_ANNOUNCED" || o.currentStage === "PRE_PLACEMENT_TALK").length,
     ongoingDrives: allUserOpps.filter((o) => o.currentStage === "REGISTRATION_OPEN" || o.currentStage === "ASSESSMENT_SCHEDULED" || o.currentStage === "INTERVIEW_SCHEDULED").length,
+    completedDrives: allUserOpps.filter((o) => o.currentStage === "SHORTLIST_ANNOUNCED" || o.currentStage === "OFFER_CONGRATULATIONS").length,
     closingSoon: allUserOpps.filter((o) => o.applicationDeadline && o.applicationDeadline >= now && o.applicationDeadline <= threeDaysAhead).length,
+    totalDrives: allUserOpps.length,
     applied: allUserOpps.filter((o) => o.studentStatus === "APPLIED" || o.studentStatus === "ASSESSMENT_COMPLETED" || o.studentStatus === "INTERVIEW_SCHEDULED").length,
     shortlisted: allUserOpps.filter((o) => o.studentStatus === "SHORTLISTED" || o.studentStatus === "SELECTED" || o.currentStage === "SHORTLIST_ANNOUNCED").length,
     resultsAnnounced: allUserOpps.filter((o) => o.currentStage === "OFFER_CONGRATULATIONS" || o.currentStage === "SHORTLIST_ANNOUNCED").length,

@@ -127,6 +127,7 @@ model UserPreference {
   notifyDeadlines       Boolean     @default(true)
   categoryOrder         Json?       // Custom ordered list of category strings e.g. ["ACADEMICS", "EXAMINATIONS", ...]
   hiddenCategories      String[]    @default([]) // Array of category keys hidden by user
+  categoryNames         Json?       // Custom display names map e.g. {"ACADEMICS": "My Academics"}
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
 }

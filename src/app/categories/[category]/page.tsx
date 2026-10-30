@@ -8,6 +8,7 @@ import { EmailCard } from "@/components/email-card";
 import { InboxFilters } from "@/components/inbox-filters";
 import { OpportunitiesList } from "@/components/opportunities-list";
 import { AcademicsFacultyFilter } from "@/components/academics-faculty-filter";
+import { PlacementStatsDashboard } from "@/components/placement-stats-dashboard";
 import { CATEGORY_METADATA } from "@/lib/utils";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Briefcase, Building2 } from "lucide-react";
@@ -26,6 +27,7 @@ interface CategoryPageProps {
     priority?: string;
     deadlines?: string;
     view?: string;
+    placementStat?: "ongoing" | "upcoming" | "completed" | "closing_soon" | "total";
     page?: string;
   };
 }
@@ -47,6 +49,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const isUnknownFaculty = searchParams.unknownFaculty === "true";
   const priority = searchParams.priority as any;
   const hasDeadlines = searchParams.deadlines === "true";
+  const placementStat = searchParams.placementStat;
   const isCDC =
     categoryEnum === EmailCategory.CDC_AND_PLACEMENT || categoryEnum === EmailCategory.PLACEMENTS_AND_INTERNSHIPS;
   const isAcademics = categoryEnum === EmailCategory.ACADEMICS;
@@ -69,11 +72,11 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     ]);
     allAcademicsCount = totalAcad;
 
-    const knownAddresses = facultyList.map((f) => f.email.toLowerCase());
+    const knownAddresses = facultyList.map((f: any) => f.email.toLowerCase());
 
     const [countsByFaculty, unassignedCount] = await Promise.all([
       Promise.all(
-        facultyList.map(async (f) => {
+        facultyList.map(async (f: any) => {
           const count = await prisma.email.count({
             where: {
               userId,
@@ -107,7 +110,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     unassignedFacultyCount = unassignedCount;
   }
 
-  const [emailData, stats, oppsData] = await Promise.all([
+  const [emailData, stats, oppsData, userPrefs] = await Promise.all([
     !isOpportunitiesView
       ? getEmails({
           userId,
@@ -118,14 +121,21 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           unknownFaculty: isAcademics ? isUnknownFaculty : undefined,
           priorityLevel: priority,
           hasDeadlines,
+          placementStat: isCDC ? placementStat : undefined,
           page,
           pageSize: 25,
         })
       : Promise.resolve({ emails: [], totalCount: 0, totalPages: 0 }),
     getEmailStats(userId),
-    isOpportunitiesView
-      ? getOpportunities(userId, { page, pageSize: 15 })
+    isCDC
+      ? getOpportunities(userId, { page: isOpportunitiesView ? page : 1, pageSize: 15 })
       : Promise.resolve({ opportunities: [], totalCount: 0, totalPages: 0, stats: null }),
+    userId
+      ? prisma.userPreference.findUnique({
+          where: { userId },
+          select: { categoryNames: true },
+        })
+      : Promise.resolve(null),
   ]);
 
   const emails = emailData.emails;
@@ -135,6 +145,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   const isDemoUser = user?.email === "fictional.student@vitapstudent.ac.in";
   const meta = CATEGORY_METADATA[categoryEnum] || CATEGORY_METADATA.OTHER;
+  const customNamesMap = (userPrefs?.categoryNames as Record<string, string>) || {};
+  const categoryDisplayName = customNamesMap[categoryEnum] || meta.label;
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#F7F8F4]">
@@ -150,14 +162,14 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-lg font-semibold text-sm border ${meta.bg} ${meta.color} ${meta.border}`}
               >
-                {meta.label}
+                {categoryDisplayName}
               </span>
               <div>
                 <h2 className="text-xl font-bold tracking-tight text-[#252923]">
-                  {meta.label} Feed
+                  {categoryDisplayName} Feed
                 </h2>
                 <p className="text-xs text-[#697168]">
-                  Verified university announcements categorized under {meta.label}
+                  Verified university announcements categorized under {categoryDisplayName}
                 </p>
               </div>
             </div>
@@ -207,6 +219,20 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             />
           )}
 
+          {/* CDC & Placement Interactive Statistics Dashboard (Requirement 1) */}
+          {isCDC && oppsData.stats && (
+            <PlacementStatsDashboard
+              stats={{
+                ongoingDrives: oppsData.stats.ongoingDrives,
+                upcomingDrives: oppsData.stats.upcomingDrives,
+                completedDrives: oppsData.stats.completedDrives,
+                closingSoon: oppsData.stats.closingSoon,
+                totalDrives: oppsData.stats.totalDrives,
+              }}
+              activeStat={placementStat}
+            />
+          )}
+
           {/* Render Filters if in Stream view */}
           {!isOpportunitiesView && <InboxFilters currentCategory={categoryEnum} />}
 
@@ -246,7 +272,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                   <div className="flex items-center gap-1.5">
                     {page > 1 && (
                       <Link
-                        href={`/categories/${categoryEnum}?page=${page - 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${isOpportunitiesView ? "&view=opportunities" : ""}`}
+                        href={`/categories/${categoryEnum}?page=${page - 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${placementStat ? `&placementStat=${encodeURIComponent(placementStat)}` : ""}${isOpportunitiesView ? "&view=opportunities" : ""}`}
                         className="px-3 py-1.5 rounded-lg border border-[#E1E5DC] bg-white text-[#252923] hover:bg-[#F7F8F4] flex items-center gap-1 font-medium transition-colors"
                       >
                         <ChevronLeft className="h-4 w-4" /> Previous
@@ -254,7 +280,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                     )}
                     {page < totalPages && (
                       <Link
-                        href={`/categories/${categoryEnum}?page=${page + 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${isOpportunitiesView ? "&view=opportunities" : ""}`}
+                        href={`/categories/${categoryEnum}?page=${page + 1}${subCategory ? `&subCategory=${encodeURIComponent(subCategory)}` : ""}${school ? `&school=${encodeURIComponent(school)}` : ""}${priority ? `&priority=${encodeURIComponent(priority)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${placementStat ? `&placementStat=${encodeURIComponent(placementStat)}` : ""}${isOpportunitiesView ? "&view=opportunities" : ""}`}
                         className="px-3 py-1.5 rounded-lg border border-[#E1E5DC] bg-white text-[#252923] hover:bg-[#F7F8F4] flex items-center gap-1 font-medium transition-colors"
                       >
                         Next <ChevronRight className="h-4 w-4" />
