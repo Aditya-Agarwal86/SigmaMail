@@ -114,7 +114,8 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
         const timeMatch = line.slice(match.index).match(/\b(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/i);
         const { hour, minute } = parseTimeString(timeMatch ? timeMatch[1] : "");
 
-        const dateObj = new Date(Date.UTC(year, month, day, hour, minute));
+        const utcMs = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS;
+        const dateObj = new Date(utcMs);
         const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
         if (!seenDates.has(dateKey)) {
@@ -144,7 +145,8 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
         const timeMatch = line.slice(match.index).match(/\b(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/i);
         const { hour, minute } = parseTimeString(timeMatch ? timeMatch[1] : "");
 
-        const dateObj = new Date(Date.UTC(year, month, day, hour, minute));
+        const utcMs = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS;
+        const dateObj = new Date(utcMs);
         const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
         if (!seenDates.has(dateKey)) {
@@ -163,7 +165,7 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
       }
     }
 
-    // Regex 3: Named month e.g. "15th November 2026", "November 15, 2026", "15 Nov 2026"
+    // Regex 3: Named month - Day first e.g. "15th November 2026", "15 Nov 2026"
     const monthNamePattern = /\b(\d{1,2})(?:st|nd|rd|th)?\s+(jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|sept|september|oct|october|nov|november|dec|december)(?:\s*,?\s*(\d{4}))?\b/gi;
     while ((match = monthNamePattern.exec(line)) !== null) {
       const day = parseInt(match[1], 10);
@@ -175,7 +177,43 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
         const timeMatch = line.slice(match.index).match(/\b(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/i);
         const { hour, minute } = parseTimeString(timeMatch ? timeMatch[1] : "");
 
-        const dateObj = new Date(Date.UTC(year, month, day, hour, minute));
+        // Convert IST (UTC+5:30) date & time to UTC Date timestamp
+        // UTC milliseconds = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS
+        const utcMs = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS;
+        const dateObj = new Date(utcMs);
+        const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+        if (!seenDates.has(dateKey)) {
+          seenDates.add(dateKey);
+          const snippet = line.slice(Math.max(0, match.index - 30), Math.min(line.length, match.index + 50));
+          const confidence = hasActionPrefix ? 0.95 : 0.70;
+
+          candidates.push({
+            title: deriveDeadlineTitle(input.subject, line),
+            dueDate: dateObj,
+            confidenceScore: confidence,
+            evidenceSnippet: snippet.trim(),
+            actionText: extractActionText(line),
+          });
+        }
+      }
+    }
+
+    // Regex 4: Named month - Month first e.g. "November 15, 2026", "Nov 15 2026", "November 15th, 2026"
+    const monthFirstPattern = /\b(jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|sept|september|oct|october|nov|november|dec|december)\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s*,?\s*(\d{4}))?\b/gi;
+    while ((match = monthFirstPattern.exec(line)) !== null) {
+      const monthStr = match[1].toLowerCase();
+      const day = parseInt(match[2], 10);
+      const month = MONTH_NAMES[monthStr];
+      const year = match[3] ? parseInt(match[3], 10) : receivedYear;
+
+      if (month !== undefined && isValidCalendarDate(year, month, day)) {
+        const timeMatch = line.slice(match.index).match(/\b(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/i);
+        const { hour, minute } = parseTimeString(timeMatch ? timeMatch[1] : "");
+
+        // Convert IST (UTC+5:30) date & time to UTC Date timestamp
+        const utcMs = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS;
+        const dateObj = new Date(utcMs);
         const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
         if (!seenDates.has(dateKey)) {

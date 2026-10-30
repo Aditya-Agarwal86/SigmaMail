@@ -9,6 +9,7 @@ import { formatDate, formatDueDate, CATEGORY_METADATA, PRIORITY_METADATA, cn } f
 import { ArrowLeft, Sparkles, Calendar, Star, ShieldCheck, Info } from "lucide-react";
 import { DeadlineActionPanel } from "@/components/deadline-action-panel";
 import { ManualCategoryOverride } from "@/components/manual-override";
+import { ReclassifyEmailButton } from "@/components/reclassify-email-button";
 
 export const dynamic = "force-dynamic";
 
@@ -153,6 +154,30 @@ export default async function EmailDetailPage({ params, searchParams }: EmailVie
                     Category Locked by Student
                   </span>
                 )}
+              </div>
+
+              {/* Action Toolbar: Re-Classify Button, Quick Controls */}
+              <div className="flex items-center justify-between pt-2 border-t border-[#E1E5DC] flex-wrap gap-2">
+                <ReclassifyEmailButton
+                  emailId={email.id}
+                  isManualOverride={email.isManualOverride}
+                  currentCategoryName={meta.label}
+                />
+
+                <div className="flex items-center gap-2 text-xs text-[#697168]">
+                  <span className="font-medium">Confidence:</span>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${
+                      email.confidenceTier === "HIGH"
+                        ? "bg-[#E5EBE1] text-[#244A3A] border-[#D3DCD0]"
+                        : email.confidenceTier === "MEDIUM"
+                        ? "bg-amber-50 text-amber-900 border-amber-200"
+                        : "bg-rose-50 text-rose-700 border-rose-200"
+                    }`}
+                  >
+                    {email.confidenceTier} ({Math.round(email.classificationConfidence * 100)}%)
+                  </span>
+                </div>
               </div>
             </div>
 

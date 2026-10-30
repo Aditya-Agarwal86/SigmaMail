@@ -1,4 +1,5 @@
 import { getEmails, getEmailStats, getCurrentUser } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { EmailCard } from "@/components/email-card";
@@ -34,7 +35,16 @@ export default async function InboxPage({
   const user = await getCurrentUser();
   const userId = user?.id;
 
-  const [{ emails, totalCount, totalPages }, stats] = await Promise.all([
+  const now = new Date();
+  const nextThreeDays = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+  const [
+    { emails, totalCount, totalPages },
+    stats,
+    actionRequiredEmails,
+    imminentDeadlines,
+    activeDrivesCount,
+  ] = await Promise.all([
     getEmails({
       userId,
       query,
@@ -47,6 +57,58 @@ export default async function InboxPage({
       pageSize: 25,
     }),
     getEmailStats(userId),
+    // Urgent / Attention Required messages
+    userId
+      ? prisma.email.findMany({
+          where: {
+            userId,
+            isTrash: false,
+            isArchived: false,
+            OR: [
+              { priorityLevel: "URGENT" },
+              { isImportant: true, isRead: false },
+            ],
+          },
+          take: 3,
+          orderBy: { receivedAt: "desc" },
+          select: {
+            id: true,
+            subject: true,
+            sender: true,
+            category: true,
+            priorityLevel: true,
+            receivedAt: true,
+          },
+        })
+      : Promise.resolve([]),
+    // Nearest Upcoming Deadlines (within 3 days or next upcoming)
+    userId
+      ? prisma.deadline.findMany({
+          where: {
+            userId,
+            status: "PENDING",
+            dueDate: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+          },
+          take: 3,
+          orderBy: { dueDate: "asc" },
+          select: {
+            id: true,
+            title: true,
+            dueDate: true,
+            category: true,
+            isCandidate: true,
+          },
+        })
+      : Promise.resolve([]),
+    // Active Placement Drives Count
+    userId
+      ? prisma.placementOpportunity.count({
+          where: {
+            userId,
+            currentStage: { in: ["DRIVE_ANNOUNCED", "REGISTRATION_OPEN", "ASSESSMENT_SCHEDULED"] },
+          },
+        })
+      : Promise.resolve(0),
   ]);
 
   const isDemoUser = user?.email === "fictional.student@vitapstudent.ac.in";
@@ -87,8 +149,140 @@ export default async function InboxPage({
             </div>
           )}
 
+          {/* Actionable Student Dashboard Overview Cards (Section 11) */}
+          <div className="p-6 max-w-5xl mx-auto space-y-6 pb-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+              <div className="bg-white p-3 rounded-xl border border-[#E1E5DC] shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-[#697168] block">Total Emails</span>
+                <span className="text-xl font-bold text-[#252923] mt-0.5 block">{stats.total}</span>
+                <span className="text-[10px] text-[#697168]">Synchronized</span>
+              </div>
+
+              <div className="bg-white p-3 rounded-xl border border-[#E1E5DC] shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-[#244A3A] block">Unread</span>
+                <span className="text-xl font-bold text-[#244A3A] mt-0.5 block">{stats.unread}</span>
+                <span className="text-[10px] text-[#697168]">Needs Attention</span>
+              </div>
+
+              <div className="bg-white p-3 rounded-xl border border-[#E1E5DC] shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-amber-700 block">Important</span>
+                <span className="text-xl font-bold text-amber-900 mt-0.5 block">{stats.important}</span>
+                <span className="text-[10px] text-[#697168]">Priority Mails</span>
+              </div>
+
+              <div className="bg-white p-3 rounded-xl border border-[#E1E5DC] shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-rose-700 block">Deadlines</span>
+                <span className="text-xl font-bold text-rose-900 mt-0.5 block">{stats.deadlines}</span>
+                <span className="text-[10px] text-[#697168]">Active / Pending</span>
+              </div>
+
+              <div className="bg-white p-3 rounded-xl border border-[#E1E5DC] shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-blue-700 block">Placement</span>
+                <span className="text-xl font-bold text-blue-900 mt-0.5 block">{activeDrivesCount}</span>
+                <span className="text-[10px] text-[#697168]">Active Drives</span>
+              </div>
+
+              <div className="bg-white p-3 rounded-xl border border-[#E1E5DC] shadow-card">
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-[#244A3A] block">Action Today</span>
+                <span className="text-xl font-bold text-[#252923] mt-0.5 block">{actionRequiredEmails.length}</span>
+                <span className="text-[10px] text-[#697168]">High Priority</span>
+              </div>
+            </div>
+
+            {/* Action Required Today & Nearest Deadlines Split Widget */}
+            {(actionRequiredEmails.length > 0 || imminentDeadlines.length > 0) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Action Required Today */}
+                <div className="bg-white rounded-xl border border-[#E1E5DC] p-4 shadow-card space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#E1E5DC]">
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-md bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700 text-xs font-bold">
+                        !
+                      </div>
+                      <h3 className="font-bold text-xs text-[#252923]">Action Required Today</h3>
+                    </div>
+                    <span className="text-[11px] text-[#697168]">Immediate Attention</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {actionRequiredEmails.length === 0 ? (
+                      <p className="text-xs text-[#697168] py-2">No urgent actions pending today.</p>
+                    ) : (
+                      actionRequiredEmails.map((e) => (
+                        <Link
+                          key={e.id}
+                          href={`/email/${e.id}`}
+                          className="flex items-center justify-between p-2 rounded-lg bg-[#F7F8F4] hover:bg-[#F0F2EB] border border-[#E1E5DC] text-xs transition-colors group"
+                        >
+                          <div className="truncate min-w-0 pr-2">
+                            <span className="font-semibold text-[#252923] group-hover:text-[#244A3A] truncate block">
+                              {e.subject}
+                            </span>
+                            <span className="text-[10px] text-[#697168] truncate block">
+                              From: {e.sender}
+                            </span>
+                          </div>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 shrink-0">
+                            {e.priorityLevel}
+                          </span>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Nearest Confirmed Deadlines */}
+                <div className="bg-white rounded-xl border border-[#E1E5DC] p-4 shadow-card space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#E1E5DC]">
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-6 rounded-md bg-[#E5EBE1] border border-[#D3DCD0] flex items-center justify-center text-[#244A3A] text-xs font-bold">
+                        📅
+                      </div>
+                      <h3 className="font-bold text-xs text-[#252923]">Nearest Upcoming Deadlines</h3>
+                    </div>
+                    <Link href="/deadlines" className="text-[11px] text-[#244A3A] font-semibold hover:underline">
+                      View All
+                    </Link>
+                  </div>
+
+                  <div className="space-y-2">
+                    {imminentDeadlines.length === 0 ? (
+                      <p className="text-xs text-[#697168] py-2">No deadlines approaching in the next 3 days.</p>
+                    ) : (
+                      imminentDeadlines.map((d) => (
+                        <Link
+                          key={d.id}
+                          href="/deadlines"
+                          className="flex items-center justify-between p-2 rounded-lg bg-[#F7F8F4] hover:bg-[#F0F2EB] border border-[#E1E5DC] text-xs transition-colors group"
+                        >
+                          <div className="truncate min-w-0 pr-2">
+                            <span className="font-semibold text-[#252923] group-hover:text-[#244A3A] truncate block">
+                              {d.title}
+                            </span>
+                            <span className="text-[10px] text-[#697168] block">
+                              {new Date(d.dueDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-semibold border shrink-0 ${
+                              d.isCandidate
+                                ? "bg-amber-50 text-amber-900 border-amber-200"
+                                : "bg-[#E5EBE1] text-[#244A3A] border-[#D3DCD0]"
+                            }`}
+                          >
+                            {d.isCandidate ? "Candidate" : "Confirmed"}
+                          </span>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* List Content */}
-          <div className="p-6 max-w-5xl mx-auto space-y-4">
+          <div className="p-6 max-w-5xl mx-auto space-y-4 pt-2">
             <div className="flex items-center justify-between pb-2 border-b border-[#E1E5DC]">
               <div>
                 <h2 className="text-xl font-bold tracking-tight text-[#252923]">

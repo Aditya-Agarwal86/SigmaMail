@@ -125,6 +125,8 @@ model UserPreference {
   autoArchiveRead       Boolean     @default(false)
   retentionDays         Int         @default(90) // Local copy data retention limit in days
   notifyDeadlines       Boolean     @default(true)
+  categoryOrder         Json?       // Custom ordered list of category strings e.g. ["ACADEMICS", "EXAMINATIONS", ...]
+  hiddenCategories      String[]    @default([]) // Array of category keys hidden by user
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
 }
@@ -154,6 +156,7 @@ model Email {
   subCategory              String?        // e.g. PLACEMENT_DRIVE, PLACEMENT_RESULT, PLACEMENT_CONGRATULATIONS
   school                   SchoolCode?    // e.g. SCOPE, SENSE, SMEC, SAS, VISH, VSL, VSB, SBST
   classificationConfidence Float          @default(1.0)
+  confidenceTier           String         @default("HIGH") // HIGH (>=0.85), MEDIUM (0.60-0.84), LOW (<0.60)
   classificationReason     String?
   classificationEngine     String?        @default("rule-engine-v2")
   classifiedAt             DateTime?
@@ -161,6 +164,8 @@ model Email {
   isManualOverride         Boolean        @default(false)
   priorityScore            Float          @default(0.0) // 0 to 100 importance score
   priorityLevel            PriorityLevel  @default(NORMAL)
+  userPriorityOverride     PriorityLevel? // Preserves user manual priority change
+  isPriorityManual         Boolean        @default(false)
   priorityFactors          Json?          // Detailed breakdown of contributing factors
   isImportant              Boolean        @default(false)
 
@@ -298,12 +303,27 @@ model PlacementOpportunity {
   lastActivityAt  DateTime         @default(now())
   emails          Email[]
 
+  // Placement Drive Details & Student Tracker
+  jobRole              String?
+  jobLocation          String?
+  ctc                  String?          // e.g. "24 LPA"
+  stipend              String?          // e.g. "45,000 / month"
+  eligibleBranches     String[]         @default([]) // e.g. ["CSE", "ECE"]
+  eligibleDegrees      String[]         @default([]) // e.g. ["B.Tech", "M.Tech"]
+  minCgpa              Float?           // e.g. 8.0
+  backlogCriteria      String?          // e.g. "Zero standing arrears"
+  applicationDeadline  DateTime?
+  applicationLink      String?
+  studentStatus        StudentApplicationStatus @default(INTERESTED)
+  studentNotes         String?          @db.Text
+
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
   @@unique([userId, normalizedKey, batchCycle])
   @@index([userId, lastActivityAt(sort: Desc)])
   @@index([userId, currentStage])
+  @@index([userId, studentStatus])
 }
 
 enum OpportunityStage {
@@ -315,6 +335,18 @@ enum OpportunityStage {
   SHORTLIST_ANNOUNCED
   OFFER_CONGRATULATIONS
   UPDATE_GENERAL
+}
+
+enum StudentApplicationStatus {
+  INTERESTED
+  ELIGIBLE
+  APPLIED
+  ASSESSMENT_COMPLETED
+  INTERVIEW_SCHEDULED
+  SHORTLISTED
+  SELECTED
+  REJECTED
+  WITHDRAWN
 }
 
 // Phase 10: Durable Background Sync Jobs

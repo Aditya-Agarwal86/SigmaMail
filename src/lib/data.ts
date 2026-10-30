@@ -14,6 +14,8 @@ export interface GetEmailsParams {
   isImportant?: boolean;
   priorityLevel?: PriorityLevel;
   hasDeadlines?: boolean;
+  facultyEmail?: string;
+  unknownFaculty?: boolean;
   query?: string;
   opportunityId?: string;
   page?: number;
@@ -44,6 +46,20 @@ export async function getEmails(params?: GetEmailsParams) {
 
   if (params?.school) {
     whereClause.school = params.school;
+  }
+
+  if (params?.facultyEmail) {
+    whereClause.senderAddress = params.facultyEmail.toLowerCase();
+  } else if (params?.unknownFaculty) {
+    // Exclude all known faculty addresses for this user
+    const faculty = await prisma.facultyContact.findMany({
+      where: { userId },
+      select: { email: true },
+    });
+    const knownEmails = faculty.map((f) => f.email.toLowerCase());
+    if (knownEmails.length > 0) {
+      whereClause.senderAddress = { notIn: knownEmails };
+    }
   }
 
   if (params?.isImportant !== undefined) {
@@ -103,22 +119,61 @@ export async function getEmails(params?: GetEmailsParams) {
   };
 }
 
-export async function getOpportunities(userIdParam?: string, options: { page?: number; pageSize?: number } = {}) {
+export interface GetOpportunitiesOptions {
+  page?: number;
+  pageSize?: number;
+  company?: string;
+  role?: string;
+  studentStatus?: string;
+  stage?: string;
+  branch?: string;
+}
+
+export async function getOpportunities(userIdParam?: string, options: GetOpportunitiesOptions = {}) {
   let userId = userIdParam;
   if (!userId) {
     const user = await getCurrentUser();
-    if (!user) return { opportunities: [], totalCount: 0, totalPages: 0, page: 1 };
+    if (!user) return { opportunities: [], totalCount: 0, totalPages: 0, page: 1, stats: null };
     userId = user.id;
+  }
+
+  const where: any = { userId };
+
+  if (options.company) {
+    where.companyName = { contains: options.company, mode: "insensitive" };
+  }
+  if (options.role) {
+    where.jobRole = { contains: options.role, mode: "insensitive" };
+  }
+  if (options.studentStatus) {
+    where.studentStatus = options.studentStatus as any;
+  }
+  if (options.stage) {
+    where.currentStage = options.stage as any;
+  }
+  if (options.branch) {
+    where.eligibleBranches = { has: options.branch };
   }
 
   const page = Math.max(1, options.page || 1);
   const pageSize = Math.max(1, Math.min(options.pageSize || 20, 50));
   const skip = (page - 1) * pageSize;
 
-  const [totalCount, opportunities] = await Promise.all([
-    prisma.placementOpportunity.count({ where: { userId } }),
+  // Real-time calculation of dashboard statistics from actual user opportunities
+  const [totalCount, allUserOpps, opportunities] = await Promise.all([
+    prisma.placementOpportunity.count({ where }),
     prisma.placementOpportunity.findMany({
       where: { userId },
+      select: {
+        id: true,
+        currentStage: true,
+        studentStatus: true,
+        lastActivityAt: true,
+        applicationDeadline: true,
+      },
+    }),
+    prisma.placementOpportunity.findMany({
+      where,
       orderBy: { lastActivityAt: "desc" },
       skip,
       take: pageSize,
@@ -137,12 +192,27 @@ export async function getOpportunities(userIdParam?: string, options: { page?: n
     }),
   ]);
 
+  const now = new Date();
+  const threeDaysAhead = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const placementStats = {
+    upcomingDrives: allUserOpps.filter((o) => o.currentStage === "DRIVE_ANNOUNCED" || o.currentStage === "PRE_PLACEMENT_TALK").length,
+    ongoingDrives: allUserOpps.filter((o) => o.currentStage === "REGISTRATION_OPEN" || o.currentStage === "ASSESSMENT_SCHEDULED" || o.currentStage === "INTERVIEW_SCHEDULED").length,
+    closingSoon: allUserOpps.filter((o) => o.applicationDeadline && o.applicationDeadline >= now && o.applicationDeadline <= threeDaysAhead).length,
+    applied: allUserOpps.filter((o) => o.studentStatus === "APPLIED" || o.studentStatus === "ASSESSMENT_COMPLETED" || o.studentStatus === "INTERVIEW_SCHEDULED").length,
+    shortlisted: allUserOpps.filter((o) => o.studentStatus === "SHORTLISTED" || o.studentStatus === "SELECTED" || o.currentStage === "SHORTLIST_ANNOUNCED").length,
+    resultsAnnounced: allUserOpps.filter((o) => o.currentStage === "OFFER_CONGRATULATIONS" || o.currentStage === "SHORTLIST_ANNOUNCED").length,
+    newOpportunities: allUserOpps.filter((o) => new Date(o.lastActivityAt) >= sevenDaysAgo).length,
+  };
+
   return {
     opportunities,
     totalCount,
     totalPages: Math.ceil(totalCount / pageSize),
     page,
     pageSize,
+    stats: placementStats,
   };
 }
 

@@ -598,28 +598,30 @@ export function classifyEmail(input: ClassificationInput): ClassificationResult 
     };
   }
 
-  // 5C: Transport Content
-  if (
-    /\b(bus\s*route|transport\s*schedule|bus\s*timings|pickup\s*point|transport\s*fee|bus\s*pass)\b/i.test(cleanSubject) ||
-    normSenderAddress.includes("transport")
-  ) {
+  // 5C: Transport Content (Bus timings, routes, day-scholar transport)
+  const isTransportSubject = /\b(transport|bus\s*route|bus\s*timings?|bus\s*schedule|pickup\s*point|day\s*scholar\s*bus|transport\s*fee|bus\s*pass|shuttle\s*service|transport\s*terminal)\b/i.test(cleanSubject);
+  const isTransportBody = /\b(bus\s*routes?|bus\s*timings?|transport\s*terminal|day\s*scholars?|vijayawada\s*routes?|guntur\s*routes?|departure\s*timings?|transport\s*helpdesk)\b/i.test(cleanBody);
+  const isTransportSender = normSenderAddress.includes("transport");
+
+  if (isTransportSubject || isTransportSender || (isTransportBody && !normSenderAddress.includes("warden") && !cleanSubject.includes("hostel"))) {
     return {
       category: EmailCategory.TRANSPORT,
-      confidence: 0.88,
-      evidence: ["Transport schedule or bus route notice"],
-      explanation: "Classified as Transport based on bus and transport notices.",
+      confidence: (isTransportSender || isTransportSubject) ? 0.95 : 0.88,
+      evidence: ["Transport schedule, day-scholar route, or bus notice"],
+      explanation: "Classified as Transport based on university bus and transit notices.",
       ruleMatched: "content:transport",
     };
   }
 
-  // 5D: Hostel Content
-  if (
-    /\b(hostel\s*admission|room\s*allotment|hostel\s*fee|mess\s*menu|mess\s*change|outpass|night\s*curfew|vacation\s*hostel|block\s*[a-z0-9]+\s*hostel)\b/i.test(cleanSubject) ||
-    (normSenderAddress.includes("warden") || normSenderAddress.includes("hostel"))
-  ) {
+  // 5D: Hostel Content (Rooms, Mess, Wardens, Turnstiles, In-Hostel notices)
+  const isHostelSubject = /\b(hostel|warden|room\s*allotment|hostel\s*fee|mess\s*menu|mess\s*change|outpass|night\s*curfew|vacation\s*hostel|block\s*[a-z0-9]+\s*hostel|biometric\s*turnstile|hostel\s*admin)\b/i.test(cleanSubject);
+  const isHostelBody = /\b(chief\s*warden|hostel\s*reception|room\s*occupancy|turnstile\s*access|gate\s*pass\s*deactivation|block\s*[a-z0-9]+|resident\s*students?)\b/i.test(cleanBody);
+  const isHostelSender = normSenderAddress.includes("warden") || normSenderAddress.includes("hostel");
+
+  if (isHostelSubject || isHostelSender || isHostelBody) {
     return {
       category: EmailCategory.HOSTEL,
-      confidence: 0.88,
+      confidence: (isHostelSender || isHostelSubject) ? 0.95 : 0.85,
       evidence: ["Hostel, mess or room allotment notice"],
       explanation: "Classified as Hostel based on hostel management indicators.",
       ruleMatched: "content:hostel",

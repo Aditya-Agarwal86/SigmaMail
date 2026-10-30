@@ -75,7 +75,11 @@ export async function processEmailIntelligence(emailId: string): Promise<Process
     const hasManualOverride = email.isManualOverride && email.userCategoryOverride;
     const finalCategory = hasManualOverride ? email.userCategoryOverride! : classification.category;
 
-    // 3. Compute Priority Score
+    // Determine 3-tier confidence level
+    const conf = classification.confidence || 0.8;
+    const confidenceTier = conf >= 0.85 ? "HIGH" : conf >= 0.60 ? "MEDIUM" : "LOW";
+
+    // 3. Compute Priority Score (preserve manual priority override if set)
     const priorityResult = calculatePriorityScore({
       subject: email.subject,
       sender: email.sender,
@@ -87,6 +91,10 @@ export async function processEmailIntelligence(emailId: string): Promise<Process
       deadlineDates,
     });
 
+    const finalPriorityLevel = email.isPriorityManual && email.userPriorityOverride
+      ? email.userPriorityOverride
+      : priorityResult.level;
+
     // 4. Update Email record with intelligence data
     await prisma.email.update({
       where: { id: email.id },
@@ -95,11 +103,12 @@ export async function processEmailIntelligence(emailId: string): Promise<Process
         subCategory: classification.subCategory || email.subCategory,
         school: classification.school || email.school,
         classificationConfidence: classification.confidence,
+        confidenceTier,
         classificationReason: classification.explanation,
         classificationEngine: "rule-engine-v2",
         classifiedAt: new Date(),
         priorityScore: priorityResult.score,
-        priorityLevel: priorityResult.level,
+        priorityLevel: finalPriorityLevel,
         priorityFactors: priorityResult.factors as any,
         isImportant: priorityResult.isImportant,
       },

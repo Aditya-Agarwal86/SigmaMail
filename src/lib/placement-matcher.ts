@@ -16,6 +16,7 @@ const KNOWN_COMPANIES: Array<{ name: string; key: string; patterns: RegExp[] }> 
   { name: "Microsoft", key: "microsoft", patterns: [/\bmicrosoft\b/i] },
   { name: "Amazon", key: "amazon", patterns: [/\bamazon\b/i] },
   { name: "Nvidia", key: "nvidia", patterns: [/\bnvidia\b/i] },
+  { name: "Nexus Cloud Systems", key: "nexuscloud", patterns: [/\bnexus\s*cloud(?:\s*systems)?\b/i] },
   { name: "Tata Power", key: "tatapower", patterns: [/\btata\s*power\b/i] },
   { name: "Leadsquared", key: "leadsquared", patterns: [/\bleadsquared\b/i] },
   { name: "Kanini", key: "kanini", patterns: [/\bkanini\b/i] },
@@ -218,6 +219,27 @@ export async function associateEmailOpportunity(emailId: string): Promise<string
   const { companyName, normalizedKey, batchCycle, stage } = extraction;
   const cycleKey = batchCycle || "GENERAL";
 
+  const text = `${email.subject}\n${email.snippet}\n${email.bodyPlain || ""}`;
+
+  // Extract CTC (e.g. "24 LPA", "12.5 LPA", "CTC: 8 LPA")
+  const ctcMatch = text.match(/\b(?:ctc|package)?\s*:?\s*(\d+(?:\.\d+)?\s*(?:lpa|lakhs?(?:\s*per\s*annum)?))\b/i);
+  const ctc = ctcMatch ? ctcMatch[1].toUpperCase() : null;
+
+  // Extract Job Role (e.g. "Role: Software Engineer", "Role: Member Technical Staff")
+  const roleMatch = text.match(/\b(?:role|profile|position|designation)\s*:?\s*([A-Za-z0-9\s/-]+?)(?:\n|\r|\.|;|$)/i);
+  const jobRole = roleMatch ? roleMatch[1].trim() : null;
+
+  // Extract Minimum CGPA (e.g. "CGPA >= 8.0", "CGPA 7.5 and above")
+  const cgpaMatch = text.match(/cgpa\s*(?:>=|>|:)?\s*(\d+(?:\.\d+)?)/i);
+  const minCgpa = cgpaMatch ? parseFloat(cgpaMatch[1]) : null;
+
+  // Extract eligible branches (e.g. "CSE", "ECE", "B.Tech CSE")
+  const branches: string[] = [];
+  if (/\b(?:b\.?tech\s*)?cse\b/i.test(text)) branches.push("CSE");
+  if (/\b(?:b\.?tech\s*)?ece\b/i.test(text)) branches.push("ECE");
+  if (/\b(?:b\.?tech\s*)?mech(?:anical)?\b/i.test(text)) branches.push("MECH");
+  if (/\b(?:b\.?tech\s*)?eee\b/i.test(text)) branches.push("EEE");
+
   // Upsert the PlacementOpportunity for this user and company
   let opportunity = await prisma.placementOpportunity.findFirst({
     where: {
@@ -235,6 +257,10 @@ export async function associateEmailOpportunity(emailId: string): Promise<string
         lastActivityAt: email.receivedAt > opportunity.lastActivityAt ? email.receivedAt : opportunity.lastActivityAt,
         currentStage: stage,
         statusSnippet: normalizeSubject(email.subject).slice(0, 150),
+        ctc: ctc || opportunity.ctc,
+        jobRole: jobRole || opportunity.jobRole,
+        minCgpa: minCgpa !== null ? minCgpa : opportunity.minCgpa,
+        eligibleBranches: branches.length > 0 ? branches : opportunity.eligibleBranches,
       },
     });
   } else {
@@ -247,6 +273,10 @@ export async function associateEmailOpportunity(emailId: string): Promise<string
         currentStage: stage,
         statusSnippet: normalizeSubject(email.subject).slice(0, 150),
         lastActivityAt: email.receivedAt,
+        ctc,
+        jobRole,
+        minCgpa,
+        eligibleBranches: branches,
       },
     });
   }

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Sliders, Trash2, Database, Key } from "lucide-react";
 import { GmailSettingsPanel } from "@/components/gmail-settings-panel";
+import { PurgeDataButton } from "@/components/purge-data-button";
 
 export const dynamic = "force-dynamic";
 
@@ -115,10 +116,7 @@ export default async function SettingsPage() {
                 In strict compliance with student data sovereignty, you can purge your synchronized local emails, extracted deadlines, and classification history at any time.
               </p>
               <div className="pt-1">
-                <Button variant="outline" size="sm" className="gap-2 text-xs text-rose-700 border-rose-200 hover:bg-rose-50">
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>Purge Local Synchronized Emails</span>
-                </Button>
+                <PurgeDataButton isDemoUser={isDemoUser} />
               </div>
             </div>
           </div>

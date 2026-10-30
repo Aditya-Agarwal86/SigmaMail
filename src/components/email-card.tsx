@@ -82,6 +82,22 @@ export function EmailCard({ email, returnUrl }: EmailCardProps) {
               </span>
             )}
 
+            {(email as any).confidenceTier && (
+              <span
+                className={cn(
+                  "px-1.5 py-0.2 rounded text-[10px] font-medium border",
+                  (email as any).confidenceTier === "HIGH"
+                    ? "bg-[#E5EBE1] text-[#244A3A] border-[#D3DCD0]"
+                    : (email as any).confidenceTier === "MEDIUM"
+                    ? "bg-amber-50 text-amber-900 border-amber-200"
+                    : "bg-rose-50 text-rose-700 border-rose-200"
+                )}
+                title={`Classification confidence: ${Math.round((email.classificationConfidence || 0.8) * 100)}%`}
+              >
+                {(email as any).confidenceTier}
+              </span>
+            )}
+
             <span className="text-[#E1E5DC]">•</span>
             <span className="text-[#697168] text-[11px] font-normal">{formatDate(email.receivedAt)}</span>
           </div>

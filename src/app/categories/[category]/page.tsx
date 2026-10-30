@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { EmailCategory, SchoolCode } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getEmails, getEmailStats, getCurrentUser, getOpportunities } from "@/lib/data";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { EmailCard } from "@/components/email-card";
 import { InboxFilters } from "@/components/inbox-filters";
 import { OpportunitiesList } from "@/components/opportunities-list";
+import { AcademicsFacultyFilter } from "@/components/academics-faculty-filter";
 import { CATEGORY_METADATA } from "@/lib/utils";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Briefcase, Building2 } from "lucide-react";
@@ -19,6 +21,8 @@ interface CategoryPageProps {
   searchParams: {
     subCategory?: string;
     school?: string;
+    faculty?: string;
+    unknownFaculty?: string;
     priority?: string;
     deadlines?: string;
     view?: string;
@@ -39,11 +43,69 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const page = parseInt(searchParams.page || "1", 10) || 1;
   const subCategory = searchParams.subCategory;
   const school = searchParams.school as SchoolCode | undefined;
+  const facultyEmail = searchParams.faculty;
+  const isUnknownFaculty = searchParams.unknownFaculty === "true";
   const priority = searchParams.priority as any;
   const hasDeadlines = searchParams.deadlines === "true";
   const isCDC =
     categoryEnum === EmailCategory.CDC_AND_PLACEMENT || categoryEnum === EmailCategory.PLACEMENTS_AND_INTERNSHIPS;
+  const isAcademics = categoryEnum === EmailCategory.ACADEMICS;
   const isOpportunitiesView = isCDC && searchParams.view === "opportunities";
+
+  // If viewing Academics, fetch user's configured faculty contacts and calculate email counts
+  let facultyFilterData: any[] = [];
+  let allAcademicsCount = 0;
+  let unassignedFacultyCount = 0;
+
+  if (isAcademics && userId) {
+    const [facultyList, totalAcad] = await Promise.all([
+      prisma.facultyContact.findMany({
+        where: { userId },
+        orderBy: { name: "asc" },
+      }),
+      prisma.email.count({
+        where: { userId, category: EmailCategory.ACADEMICS, isTrash: false, isArchived: false },
+      }),
+    ]);
+    allAcademicsCount = totalAcad;
+
+    const knownAddresses = facultyList.map((f) => f.email.toLowerCase());
+
+    const [countsByFaculty, unassignedCount] = await Promise.all([
+      Promise.all(
+        facultyList.map(async (f) => {
+          const count = await prisma.email.count({
+            where: {
+              userId,
+              category: EmailCategory.ACADEMICS,
+              senderAddress: f.email.toLowerCase(),
+              isTrash: false,
+              isArchived: false,
+            },
+          });
+          return {
+            id: f.id,
+            name: f.name,
+            email: f.email,
+            courseLabel: f.courseLabel,
+            count,
+          };
+        })
+      ),
+      prisma.email.count({
+        where: {
+          userId,
+          category: EmailCategory.ACADEMICS,
+          senderAddress: knownAddresses.length > 0 ? { notIn: knownAddresses } : undefined,
+          isTrash: false,
+          isArchived: false,
+        },
+      }),
+    ]);
+
+    facultyFilterData = countsByFaculty;
+    unassignedFacultyCount = unassignedCount;
+  }
 
   const [emailData, stats, oppsData] = await Promise.all([
     !isOpportunitiesView
@@ -52,6 +114,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           category: categoryEnum,
           subCategory,
           school,
+          facultyEmail: isAcademics ? facultyEmail : undefined,
+          unknownFaculty: isAcademics ? isUnknownFaculty : undefined,
           priorityLevel: priority,
           hasDeadlines,
           page,
@@ -61,7 +125,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     getEmailStats(userId),
     isOpportunitiesView
       ? getOpportunities(userId, { page, pageSize: 15 })
-      : Promise.resolve({ opportunities: [], totalCount: 0, totalPages: 0 }),
+      : Promise.resolve({ opportunities: [], totalCount: 0, totalPages: 0, stats: null }),
   ]);
 
   const emails = emailData.emails;
@@ -132,6 +196,17 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             </div>
           </div>
 
+          {/* Academics-Specific Faculty Filter */}
+          {isAcademics && (
+            <AcademicsFacultyFilter
+              facultyList={facultyFilterData}
+              allCount={allAcademicsCount}
+              unassignedCount={unassignedFacultyCount}
+              currentFacultyEmail={facultyEmail}
+              isUnknownSelected={isUnknownFaculty}
+            />
+          )}
+
           {/* Render Filters if in Stream view */}
           {!isOpportunitiesView && <InboxFilters currentCategory={categoryEnum} />}
 
@@ -140,6 +215,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             <OpportunitiesList
               opportunities={opportunities}
               currentCategoryUrl={`/categories/${categoryEnum}?view=opportunities`}
+              stats={oppsData.stats}
             />
           ) : emails.length === 0 ? (
             <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
