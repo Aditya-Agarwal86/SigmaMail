@@ -64,151 +64,153 @@ export default async function EmailDetailPage({ params, searchParams }: EmailVie
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Header user={user} isDemoUser={isDemoUser} />
 
-        <main className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto space-y-6 w-full">
-          {/* Back Navigation Bar */}
-          <div className="flex items-center gap-3 flex-wrap">
-            {backToCategoryHref && (
+        <main className="flex-1 overflow-y-auto w-full">
+          <div className="p-6 max-w-4xl mx-auto space-y-6">
+            {/* Back Navigation Bar */}
+            <div className="flex items-center gap-3 flex-wrap">
+              {backToCategoryHref && (
+                <Link
+                  href={backToCategoryHref}
+                  className={cn(
+                    "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border shadow-xs",
+                    meta.bg,
+                    meta.color,
+                    meta.border,
+                    "hover:opacity-90"
+                  )}
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <span>Back to {meta.label}</span>
+                </Link>
+              )}
+
               <Link
-                href={backToCategoryHref}
-                className={cn(
-                  "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border shadow-xs",
-                  meta.bg,
-                  meta.color,
-                  meta.border,
-                  "hover:opacity-90"
-                )}
+                href="/"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-card border border-border hover:bg-muted hover:text-foreground transition-colors"
               >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                <span>Back to {meta.label}</span>
+                <span>Inbox Stream</span>
               </Link>
-            )}
+            </div>
 
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-card border border-border hover:bg-muted hover:text-foreground transition-colors"
-            >
-              <span>Inbox Stream</span>
-            </Link>
-          </div>
-
-          {/* Email Container Card */}
-          <div className="bg-card rounded-2xl border border-border shadow-xs overflow-hidden">
-            {/* Header Area */}
-            <div className="p-6 border-b border-border space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2 flex-wrap text-xs">
-                  <span
-                    className={cn(
-                      "px-2.5 py-0.5 rounded-md font-medium text-xs border",
-                      meta.bg,
-                      meta.color,
-                      meta.border
-                    )}
-                  >
-                    {meta.label}
-                  </span>
-
-                  {priorityMeta && (
+            {/* Email Container Card */}
+            <div className="bg-card rounded-2xl border border-border shadow-xs overflow-hidden">
+              {/* Header Area */}
+              <div className="p-6 border-b border-border space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 flex-wrap text-xs">
                     <span
                       className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-medium text-xs border",
-                        priorityMeta.bg,
-                        priorityMeta.color,
-                        priorityMeta.border
+                        "px-2.5 py-0.5 rounded-md font-medium text-xs border",
+                        meta.bg,
+                        meta.color,
+                        meta.border
                       )}
                     >
-                      <span className={cn("h-2 w-2 rounded-full", priorityMeta.dot)} />
-                      <span>{priorityMeta.label}</span>
+                      {meta.label}
                     </span>
-                  )}
 
-                  {email.school && (
-                    <span className="px-2 py-0.5 rounded-md font-medium text-xs bg-muted text-foreground border border-border">
-                      {email.school}
+                    {priorityMeta && (
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-medium text-xs border",
+                          priorityMeta.bg,
+                          priorityMeta.color,
+                          priorityMeta.border
+                        )}
+                      >
+                        <span className={cn("h-2 w-2 rounded-full", priorityMeta.dot)} />
+                        <span>{priorityMeta.label}</span>
+                      </span>
+                    )}
+
+                    {email.school && (
+                      <span className="px-2 py-0.5 rounded-md font-medium text-xs bg-muted text-foreground border border-border">
+                        {email.school}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="text-xs text-muted-foreground font-medium">
+                    {formatDate(email.receivedAt)}
+                  </div>
+                </div>
+
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-snug">
+                  {email.subject}
+                </h1>
+
+                <div className="flex items-center justify-between gap-4 pt-1 text-xs text-muted-foreground">
+                  <div>
+                    <span className="font-semibold text-foreground">From: </span>
+                    <span className="font-medium text-foreground">{email.sender}</span>
+                    {email.senderAddress && (
+                      <span className="text-muted-foreground ml-1 font-mono text-[11px]">
+                        &lt;{email.senderAddress}&gt;
+                      </span>
+                    )}
+                  </div>
+
+                  {email.isManualOverride && (
+                    <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium">
+                      Category Locked by Student
                     </span>
                   )}
                 </div>
 
-                <div className="text-xs text-muted-foreground font-medium">
-                  {formatDate(email.receivedAt)}
+                {/* Action Toolbar: Re-Classify Button, Quick Controls */}
+                <div className="flex items-center justify-between pt-2 border-t border-border flex-wrap gap-2">
+                  <ReclassifyEmailButton
+                    emailId={email.id}
+                    isManualOverride={email.isManualOverride}
+                    currentCategoryName={meta.label}
+                  />
+
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="font-medium">Confidence:</span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${
+                        email.confidenceTier === "HIGH"
+                          ? "bg-primary/10 text-primary border-primary/20"
+                          : email.confidenceTier === "MEDIUM"
+                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                          : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                      }`}
+                    >
+                      {email.confidenceTier} ({Math.round(email.classificationConfidence * 100)}%)
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-snug">
-                {email.subject}
-              </h1>
-
-              <div className="flex items-center justify-between gap-4 pt-1 text-xs text-muted-foreground">
-                <div>
-                  <span className="font-semibold text-foreground">From: </span>
-                  <span className="font-medium text-foreground">{email.sender}</span>
-                  {email.senderAddress && (
-                    <span className="text-muted-foreground ml-1 font-mono text-[11px]">
-                      &lt;{email.senderAddress}&gt;
-                    </span>
-                  )}
+              {/* AI Summary Banner if present */}
+              {email.aiSummary && (
+                <div className="p-4 bg-muted/30 border-b border-border flex items-start gap-3">
+                  <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <div className="text-xs text-foreground space-y-1">
+                    <h4 className="font-semibold text-primary">Executive Summary</h4>
+                    <p className="leading-relaxed text-muted-foreground">{email.aiSummary}</p>
+                  </div>
                 </div>
+              )}
 
-                {email.isManualOverride && (
-                  <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium">
-                    Category Locked by Student
-                  </span>
-                )}
-              </div>
-
-              {/* Action Toolbar: Re-Classify Button, Quick Controls */}
-              <div className="flex items-center justify-between pt-2 border-t border-border flex-wrap gap-2">
-                <ReclassifyEmailButton
-                  emailId={email.id}
-                  isManualOverride={email.isManualOverride}
-                  currentCategoryName={meta.label}
-                />
-
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="font-medium">Confidence:</span>
-                  <span
-                    className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${
-                      email.confidenceTier === "HIGH"
-                        ? "bg-primary/10 text-primary border-primary/20"
-                        : email.confidenceTier === "MEDIUM"
-                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                        : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                    }`}
-                  >
-                    {email.confidenceTier} ({Math.round(email.classificationConfidence * 100)}%)
-                  </span>
-                </div>
+              {/* Body */}
+              <div className="p-6 text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
+                {email.bodyPlain || email.snippet}
               </div>
             </div>
 
-            {/* AI Summary Banner if present */}
-            {email.aiSummary && (
-              <div className="p-4 bg-muted/30 border-b border-border flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <div className="text-xs text-foreground space-y-1">
-                  <h4 className="font-semibold text-primary">Executive Summary</h4>
-                  <p className="leading-relaxed text-muted-foreground">{email.aiSummary}</p>
-                </div>
-              </div>
+            {/* Actionable Deadlines Extracted from this Email */}
+            {email.deadlines && email.deadlines.length > 0 && (
+              <DeadlineActionPanel deadlines={email.deadlines as any} />
             )}
 
-            {/* Body */}
-            <div className="p-6 text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
-              {email.bodyPlain || email.snippet}
-            </div>
+            {/* Manual Category Override Component */}
+            <ManualCategoryOverride
+              emailId={email.id}
+              currentCategory={email.category}
+              isManualOverride={email.isManualOverride}
+            />
           </div>
-
-          {/* Actionable Deadlines Extracted from this Email */}
-          {email.deadlines && email.deadlines.length > 0 && (
-            <DeadlineActionPanel deadlines={email.deadlines as any} />
-          )}
-
-          {/* Manual Category Override Component */}
-          <ManualCategoryOverride
-            emailId={email.id}
-            currentCategory={email.category}
-            isManualOverride={email.isManualOverride}
-          />
         </main>
       </div>
     </div>

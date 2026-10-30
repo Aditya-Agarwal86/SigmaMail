@@ -155,9 +155,10 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Header user={user} isDemoUser={isDemoUser} />
 
-        <main className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto space-y-4 w-full">
-          {/* Category Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
+        <main className="flex-1 overflow-y-auto w-full">
+          <div className="p-6 max-w-5xl mx-auto space-y-4">
+            {/* Category Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
             <div className="flex items-center gap-3">
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-lg font-semibold text-sm border ${meta.bg} ${meta.color} ${meta.border}`}
@@ -291,6 +292,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               )}
             </>
           )}
+          </div>
         </main>
       </div>
     </div>

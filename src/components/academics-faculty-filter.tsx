@@ -63,32 +63,32 @@ export function AcademicsFacultyFilter({
   const isAllSelected = !currentFacultyEmail && !isUnknownSelected;
 
   return (
-    <div className="bg-white border border-[#E1E5DC] rounded-xl p-3.5 shadow-card space-y-3">
+    <div className="bg-card border border-border rounded-xl p-3.5 shadow-xs space-y-3">
       {/* Top Header with Search and Manage Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-[#244A3A]" />
-          <span className="text-xs font-bold text-[#252923]">Filter by Faculty:</span>
-          <span className="text-[11px] text-[#697168]">
+          <Users className="h-4 w-4 text-primary" />
+          <span className="text-xs font-bold text-foreground">Filter by Faculty:</span>
+          <span className="text-[11px] text-muted-foreground">
             ({facultyList.length} faculty registered)
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="h-3 w-3 absolute left-2.5 top-2 text-[#697168]" />
+            <Search className="h-3 w-3 absolute left-2.5 top-2 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search faculty name / course..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-7 pr-2.5 py-1 text-xs rounded-lg border border-[#E1E5DC] bg-[#F7F8F4] focus:outline-hidden focus:border-[#244A3A] w-48 text-[#252923]"
+              className="pl-7 pr-2.5 py-1 text-xs rounded-lg border border-border bg-muted/40 focus:outline-hidden focus:border-primary w-48 text-foreground"
             />
           </div>
 
           <button
             onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0] hover:bg-[#d9e2d4] transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors shrink-0 cursor-pointer"
           >
             <UserPlus className="h-3.5 w-3.5" />
             <span>Manage Directory</span>
@@ -97,15 +97,15 @@ export function AcademicsFacultyFilter({
       </div>
 
       {/* Horizontal Scrollable Faculty Pills */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
         {/* All Faculty Pill */}
         <Link
           href={createUrl({ faculty: null, unknownFaculty: null })}
           className={cn(
-            "inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
+            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
             isAllSelected
-              ? "bg-[#244A3A] text-white border-[#244A3A] font-semibold shadow-xs"
-              : "bg-[#F0F2EB] text-[#252923] hover:bg-[#E5EBE1] border-[#E1E5DC]"
+              ? "bg-primary text-primary-foreground border-primary font-semibold shadow-xs"
+              : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted border-border"
           )}
         >
           <Users className="h-3.5 w-3.5" />
@@ -113,7 +113,7 @@ export function AcademicsFacultyFilter({
           <span
             className={cn(
               "px-1.5 py-0.2 rounded-full text-[10px]",
-              isAllSelected ? "bg-white/20 text-white" : "bg-white text-[#697168] border border-[#E1E5DC]"
+              isAllSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-card text-muted-foreground border border-border"
             )}
           >
             {allCount}
@@ -128,10 +128,10 @@ export function AcademicsFacultyFilter({
               key={faculty.id}
               href={createUrl({ faculty: faculty.email, unknownFaculty: null })}
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
                 isSelected
-                  ? "bg-[#244A3A] text-white border-[#244A3A] font-semibold shadow-xs"
-                  : "bg-[#F0F2EB] text-[#252923] hover:bg-[#E5EBE1] border-[#E1E5DC]"
+                  ? "bg-primary text-primary-foreground border-primary font-semibold shadow-xs"
+                  : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted border-border"
               )}
             >
               <User className="h-3.5 w-3.5" />
@@ -144,7 +144,7 @@ export function AcademicsFacultyFilter({
               <span
                 className={cn(
                   "px-1.5 py-0.2 rounded-full text-[10px]",
-                  isSelected ? "bg-white/20 text-white" : "bg-white text-[#697168] border border-[#E1E5DC]"
+                  isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-card text-muted-foreground border border-border"
                 )}
               >
                 {faculty.count}
@@ -157,18 +157,18 @@ export function AcademicsFacultyFilter({
         <Link
           href={createUrl({ faculty: null, unknownFaculty: "true" })}
           className={cn(
-            "inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
+            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
             isUnknownSelected
-              ? "bg-[#244A3A] text-white border-[#244A3A] font-semibold shadow-xs"
-              : "bg-[#F0F2EB] text-[#252923] hover:bg-[#E5EBE1] border-[#E1E5DC]"
+              ? "bg-primary text-primary-foreground border-primary font-semibold shadow-xs"
+              : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted border-border"
           )}
         >
-          <HelpCircle className="h-3.5 w-3.5 text-[#697168]" />
+          <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
           <span>Unassigned / Unknown Faculty</span>
           <span
             className={cn(
               "px-1.5 py-0.2 rounded-full text-[10px]",
-              isUnknownSelected ? "bg-white/20 text-white" : "bg-white text-[#697168] border border-[#E1E5DC]"
+              isUnknownSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-card text-muted-foreground border border-border"
             )}
           >
             {unassignedCount}

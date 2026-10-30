@@ -49,67 +49,69 @@ export default async function DiagnosticsPage() {
   const isDemoUser = user.email === "fictional.student@vitapstudent.ac.in";
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#F7F8F4]">
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground transition-colors duration-200">
       <Sidebar stats={stats} isDemoUser={isDemoUser} />
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Header user={user} isDemoUser={isDemoUser} />
 
-        <main className="flex-1 overflow-y-auto p-6 max-w-6xl mx-auto space-y-6 w-full">
-          <div className="pb-2 border-b border-[#E1E5DC] flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-[#252923]">
-                Intelligence Pipeline Diagnostics
-              </h2>
-              <p className="text-xs text-[#697168]">
-                Diagnostic inspector for classification engines, priority algorithms, and model routing
-              </p>
+        <main className="flex-1 overflow-y-auto w-full">
+          <div className="p-6 max-w-6xl mx-auto space-y-6">
+            <div className="pb-2 border-b border-border flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
+                  Intelligence Pipeline Diagnostics
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Diagnostic inspector for classification engines, priority algorithms, and model routing
+                </p>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20">
+                Development Only
+              </span>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0]">
-              Development Only
-            </span>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-card border border-[#E1E5DC] overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#F0F2EB] border-b border-[#E1E5DC] text-[#252923] font-semibold">
-                    <th className="p-3">Subject / Sender</th>
-                    <th className="p-3">Category</th>
-                    <th className="p-3">Engine / Conf</th>
-                    <th className="p-3">Priority</th>
-                    <th className="p-3">Classification Reason</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E1E5DC]">
-                  {emails.map((e) => (
-                    <tr key={e.id} className="hover:bg-[#F7F8F4] transition-colors">
-                      <td className="p-3 max-w-xs truncate">
-                        <div className="font-semibold text-[#252923] truncate">{e.subject}</div>
-                        <div className="text-[#697168] truncate text-[11px]">{e.sender}</div>
-                      </td>
-                      <td className="p-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0]">
-                          {CATEGORY_DISPLAY_NAMES[e.category] || e.category}
-                        </span>
-                      </td>
-                      <td className="p-3 text-[#697168]">
-                        <div>{e.classificationEngine}</div>
-                        <div className="text-[10px] text-[#244A3A]">{(e.classificationConfidence * 100).toFixed(0)}%</div>
-                      </td>
-                      <td className="p-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#F0F2EB] text-[#252923] border border-[#E1E5DC]">
-                          {e.priorityLevel} ({e.priorityScore})
-                        </span>
-                      </td>
-                      <td className="p-3 text-[#697168] text-[11px] max-w-sm truncate">
-                        {e.classificationReason}
-                      </td>
+            <div className="bg-card rounded-xl shadow-xs border border-border overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-muted border-b border-border text-foreground font-semibold">
+                      <th className="p-3">Subject / Sender</th>
+                      <th className="p-3">Category</th>
+                      <th className="p-3">Engine / Conf</th>
+                      <th className="p-3">Priority</th>
+                      <th className="p-3">Classification Reason</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {emails.map((e) => (
+                      <tr key={e.id} className="hover:bg-muted/40 transition-colors">
+                        <td className="p-3 max-w-xs truncate">
+                          <div className="font-semibold text-foreground truncate">{e.subject}</div>
+                          <div className="text-muted-foreground truncate text-[11px]">{e.sender}</div>
+                        </td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-primary/10 text-primary border border-primary/20">
+                            {CATEGORY_DISPLAY_NAMES[e.category] || e.category}
+                          </span>
+                        </td>
+                        <td className="p-3 text-muted-foreground">
+                          <div>{e.classificationEngine}</div>
+                          <div className="text-[10px] text-primary">{(e.classificationConfidence * 100).toFixed(0)}%</div>
+                        </td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-muted text-foreground border border-border">
+                            {e.priorityLevel} ({e.priorityScore})
+                          </span>
+                        </td>
+                        <td className="p-3 text-muted-foreground text-[11px] max-w-sm truncate">
+                          {e.classificationReason}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </main>

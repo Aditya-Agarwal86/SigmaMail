@@ -30,17 +30,18 @@ export default async function SettingsPage() {
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Header user={user} isDemoUser={isDemoUser} />
 
-        <main className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto space-y-6 w-full">
-          <div className="pb-3 border-b border-border">
-            <h2 className="text-xl font-bold tracking-tight text-foreground">
-              Application Settings & Personalization
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Customize appearance, accent themes, Gmail authorization, AI preferences, and student data privacy
-            </p>
-          </div>
+        <main className="flex-1 overflow-y-auto w-full">
+          <div className="p-6 max-w-4xl mx-auto space-y-6">
+            <div className="pb-3 border-b border-border">
+              <h2 className="text-xl font-bold tracking-tight text-foreground">
+                Application Settings & Personalization
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Customize appearance, accent themes, Gmail authorization, AI preferences, and student data privacy
+              </p>
+            </div>
 
-          <div className="grid gap-6">
+            <div className="grid gap-6">
             {/* 1. Theme & Appearance Customization */}
             <ThemeCustomizationPanel />
 
@@ -124,6 +125,7 @@ export default async function SettingsPage() {
                 <PurgeDataButton isDemoUser={isDemoUser} />
               </div>
             </div>
+          </div>
           </div>
         </main>
       </div>
