@@ -10,6 +10,8 @@ import { ArrowLeft, Sparkles, Calendar, Star, ShieldCheck, Info } from "lucide-r
 import { DeadlineActionPanel } from "@/components/deadline-action-panel";
 import { ManualCategoryOverride } from "@/components/manual-override";
 import { ReclassifyEmailButton } from "@/components/reclassify-email-button";
+import { EmailBodyRenderer } from "@/components/email-body-renderer";
+import { EmailKeyInfoCard } from "@/components/email-key-info-card";
 
 export const dynamic = "force-dynamic";
 
@@ -193,10 +195,19 @@ export default async function EmailDetailPage({ params, searchParams }: EmailVie
                 </div>
               )}
 
-              {/* Body */}
-              <div className="p-6 text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
-                {email.bodyPlain || email.snippet}
-              </div>
+              {/* Key Information Summary Card */}
+              <EmailKeyInfoCard
+                deadlines={email.deadlines as any}
+                bodyText={email.bodyPlain || email.snippet}
+                receivedAt={email.receivedAt}
+              />
+
+              {/* Clean Responsive Email Body Renderer */}
+              <EmailBodyRenderer
+                bodyPlain={email.bodyPlain}
+                bodyHtml={(email as any).bodyHtml}
+                snippet={email.snippet}
+              />
             </div>
 
             {/* Actionable Deadlines Extracted from this Email */}

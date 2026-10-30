@@ -295,6 +295,7 @@ export async function syncUserGmail(
               subject,
               snippet,
               bodyPlain: bodies.plain.slice(0, 10000), // Bounded text retention
+              bodyHtml: bodies.html ? bodies.html.slice(0, 25000) : null,
               receivedAt,
               isRead,
               isStarred,
@@ -444,6 +445,7 @@ export async function syncUserGmail(
                       subject,
                       snippet,
                       bodyPlain: bodies.plain.slice(0, 10000),
+                      bodyHtml: bodies.html ? bodies.html.slice(0, 25000) : null,
                       receivedAt,
                       isRead: !labelIds.includes("UNREAD"),
                       isStarred: labelIds.includes("STARRED"),
@@ -537,6 +539,7 @@ export async function syncUserGmail(
                   subject,
                   snippet,
                   bodyPlain: bodies.plain.slice(0, 10000),
+                  bodyHtml: bodies.html ? bodies.html.slice(0, 25000) : null,
                   receivedAt,
                   isRead: !labelIds.includes("UNREAD"),
                   isStarred: labelIds.includes("STARRED"),
@@ -756,6 +759,7 @@ export async function backfillMessagesByIds(
           subject,
           snippet,
           bodyPlain: bodies.plain.slice(0, 10000), // Bounded text retention
+          bodyHtml: bodies.html ? bodies.html.slice(0, 25000) : null,
           receivedAt,
           isRead,
           isStarred,
