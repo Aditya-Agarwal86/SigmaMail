@@ -378,24 +378,130 @@ export async function syncUserGmail(
     } else {
       // --- INCREMENTAL SYNC: Use Gmail History API starting from lastHistoryId ---
       try {
-        const historyRes = await gmail.users.history.list({
-          userId: "me",
-          startHistoryId: credential.lastHistoryId!,
-          historyTypes: ["messageAdded", "labelAdded", "labelRemoved"],
-        });
+        let historyPageToken: string | undefined = undefined;
+        const processedMessageIds = new Set<string>();
 
-        const historyRecords = historyRes.data.history || [];
+        do {
+          const historyRes: any = await fetchWithRetry(() =>
+            gmail.users.history.list({
+              userId: "me",
+              startHistoryId: credential.lastHistoryId!,
+              historyTypes: ["messageAdded", "labelAdded", "labelRemoved"],
+              pageToken: historyPageToken,
+              maxResults: 100,
+            })
+          );
 
-        for (const record of historyRecords) {
-          // Process newly added messages
-          if (record.messagesAdded) {
-            for (const item of record.messagesAdded) {
-              if (!item.message?.id) continue;
-              const msg = await gmail.users.messages.get({
-                userId: "me",
-                id: item.message.id,
-                format: "full",
-              });
+          const historyRecords = historyRes.data.history || [];
+
+          for (const record of historyRecords) {
+            // Process newly added messages
+            if (record.messagesAdded) {
+              for (const item of record.messagesAdded) {
+                if (!item.message?.id || processedMessageIds.has(item.message.id)) continue;
+                processedMessageIds.add(item.message.id);
+
+                try {
+                  const msg = await fetchWithRetry(() =>
+                    gmail.users.messages.get({
+                      userId: "me",
+                      id: item.message.id,
+                      format: "full",
+                    })
+                  );
+                  const msgData = msg.data;
+                  const headers = msgData.payload?.headers;
+                  const subject = getHeader(headers, "Subject") || "(No Subject)";
+                  const from = getHeader(headers, "From") || "Unknown Sender";
+                  const to = getHeader(headers, "To") || credential.gmailAddress;
+                  const dateStr = getHeader(headers, "Date");
+                  const receivedAt = dateStr ? new Date(dateStr) : new Date(Number(msgData.internalDate || Date.now()));
+                  const snippet = msgData.snippet || "";
+                  const bodies = extractBodyContent(msgData.payload);
+                  const labelIds = msgData.labelIds || [];
+
+                  const savedEmail = await prisma.email.upsert({
+                    where: {
+                      userId_gmailMessageId: {
+                        userId,
+                        gmailMessageId: item.message.id,
+                      },
+                    },
+                    update: {
+                      subject,
+                      snippet,
+                      isRead: !labelIds.includes("UNREAD"),
+                      isStarred: labelIds.includes("STARRED"),
+                      isImportant: labelIds.includes("IMPORTANT"),
+                    },
+                    create: {
+                      userId,
+                      gmailMessageId: item.message.id,
+                      gmailThreadId: msgData.threadId || item.message.id,
+                      sender: from,
+                      senderAddress: extractEmailAddress(from),
+                      recipient: to,
+                      subject,
+                      snippet,
+                      bodyPlain: bodies.plain.slice(0, 10000),
+                      receivedAt,
+                      isRead: !labelIds.includes("UNREAD"),
+                      isStarred: labelIds.includes("STARRED"),
+                      isImportant: labelIds.includes("IMPORTANT"),
+                      category: EmailCategory.OTHER,
+                    },
+                  });
+
+                  try {
+                    await processEmailIntelligence(savedEmail.id);
+                  } catch (intelligenceErr) {
+                    console.warn(`Intelligence processing failed for incremental email ${savedEmail.id}:`, intelligenceErr);
+                  }
+
+                  messagesProcessed++;
+                } catch (msgErr: any) {
+                  console.warn(`[Gmail Sync] Failed fetching incremental message ${item.message.id}:`, msgErr?.message || msgErr);
+                }
+              }
+            }
+          }
+
+          historyPageToken = historyRes.data.nextPageToken || undefined;
+        } while (historyPageToken);
+
+        // Safety fallback: Also check the most recent messages from Gmail to bridge any gap
+        // (e.g. if lastHistoryId jumped forward, or history records were already compacted by Gmail)
+        const recentListRes: any = await fetchWithRetry(() =>
+          gmail.users.messages.list({
+            userId: "me",
+            maxResults: 50,
+          })
+        );
+        const recentMessages = recentListRes.data.messages || [];
+        for (const item of recentMessages) {
+          if (!item.id || processedMessageIds.has(item.id)) continue;
+
+          // Check if already in DB
+          const exists = await prisma.email.findUnique({
+            where: {
+              userId_gmailMessageId: {
+                userId,
+                gmailMessageId: item.id,
+              },
+            },
+            select: { id: true },
+          });
+
+          if (!exists) {
+            processedMessageIds.add(item.id);
+            try {
+              const msg = await fetchWithRetry(() =>
+                gmail.users.messages.get({
+                  userId: "me",
+                  id: item.id,
+                  format: "full",
+                })
+              );
               const msgData = msg.data;
               const headers = msgData.payload?.headers;
               const subject = getHeader(headers, "Subject") || "(No Subject)";
@@ -411,7 +517,7 @@ export async function syncUserGmail(
                 where: {
                   userId_gmailMessageId: {
                     userId,
-                    gmailMessageId: item.message.id,
+                    gmailMessageId: item.id,
                   },
                 },
                 update: {
@@ -423,8 +529,8 @@ export async function syncUserGmail(
                 },
                 create: {
                   userId,
-                  gmailMessageId: item.message.id,
-                  gmailThreadId: msgData.threadId || item.message.id,
+                  gmailMessageId: item.id,
+                  gmailThreadId: msgData.threadId || item.id,
                   sender: from,
                   senderAddress: extractEmailAddress(from),
                   recipient: to,
@@ -442,10 +548,12 @@ export async function syncUserGmail(
               try {
                 await processEmailIntelligence(savedEmail.id);
               } catch (intelligenceErr) {
-                console.warn(`Intelligence processing failed for incremental email ${savedEmail.id}:`, intelligenceErr);
+                console.warn(`Intelligence processing failed for recent email ${savedEmail.id}:`, intelligenceErr);
               }
 
               messagesProcessed++;
+            } catch (msgErr: any) {
+              console.warn(`[Gmail Sync] Failed fetching recent message ${item.id}:`, msgErr?.message || msgErr);
             }
           }
         }
