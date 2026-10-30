@@ -31,6 +31,13 @@ export interface InlineToken {
   url?: string;
 }
 
+export interface AttachmentInfo {
+  name: string;
+  size?: string;
+  type: string;
+  url?: string;
+}
+
 /**
  * Truncates and cleans long, ugly tracking URLs for user-friendly display
  * while preserving the full original destination href.
@@ -154,7 +161,6 @@ export function parsePlainTextEmail(rawText: string): ContentBlock[] {
     // A. Detect Markdown Table
     if (line.includes("|") && lines[i + 1] && /^\s*\|?[-:| ]+\|?\s*$/.test(lines[i + 1])) {
       const headerLine = line;
-      const delimiterLine = lines[i + 1];
       const headers = headerLine
         .split("|")
         .map((cell) => cell.trim())
@@ -272,33 +278,88 @@ export function parsePlainTextEmail(rawText: string): ContentBlock[] {
 }
 
 /**
- * Server-safe, zero-dependency HTML sanitizer.
- * Strips script tags, on* handlers, iframe, object, embed, forms, and style blocks.
+ * Robust HTML sanitizer.
+ * Options:
+ * - blockRemoteImages: when true, remote image URLs are swapped with data-blocked-src
+ * - preserveStyles: when true, retains <style> blocks and inline styles for Original View
  */
-export function sanitizeHtml(rawHtml: string): string {
+export function sanitizeHtml(
+  rawHtml: string,
+  options: { blockRemoteImages?: boolean; preserveStyles?: boolean } = {}
+): string {
   if (!rawHtml) return "";
 
   let sanitized = rawHtml
-    // 1. Remove dangerous executable containers and tags
+    // 1. Remove dangerous executable scripts, frames, objects, embeds, and forms
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
     .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
     .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, "")
     .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, "")
     .replace(/<form\b[^<]*(?:(?!<\/form>)<[^<]*)*<\/form>/gi, "")
     .replace(/<meta\b[^>]*>/gi, "")
-    .replace(/<link\b[^>]*>/gi, "")
-    // 2. Remove inline event handlers (onload, onclick, onerror, etc.)
+    .replace(/<link\b[^>]*>/gi, "");
+
+  // If styles are NOT preserved (clean view), strip <style> tags
+  if (!options.preserveStyles) {
+    sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "");
+  }
+
+  // 2. Remove inline event handlers (onload, onclick, onerror, onmouseover, etc.)
+  sanitized = sanitized
     .replace(/\s*on\w+\s*=\s*(["'])[\s\S]*?\1/gi, "")
     .replace(/\s*on\w+\s*=\s*[^\s>]+/gi, "")
-    // 3. Remove javascript: and data: in href/src attributes
+    // 3. Remove javascript: and data: (except safe data:image/) in href/src attributes
     .replace(/href\s*=\s*("[^"]*javascript:[^"]*"|'[^']*javascript:[^']*')/gi, 'href="#"')
     .replace(/src\s*=\s*("[^"]*javascript:[^"]*"|'[^']*javascript:[^']*')/gi, 'src=""')
     .replace(/href\s*=\s*("[^"]*data:[^"]*"|'[^']*data:[^']*')/gi, 'href="#"')
     .replace(/javascript\s*:/gi, "blocked:");
 
-  // 4. Force all links to open in a new tab with noopener noreferrer
+  // 4. Handle remote image tracking protection
+  if (options.blockRemoteImages) {
+    // Replace remote http/https src with a placeholder svg
+    sanitized = sanitized.replace(
+      /<img\b([^>]*?)src=["'](https?:\/\/[^"']+)["']([^>]*?)>/gi,
+      (_match, pre, src, post) => {
+        return `<img ${pre}src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40'><rect width='100%' height='100%' fill='%23334155'/><text x='50%' y='50%' fill='%2394a3b8' font-size='10' text-anchor='middle' dy='.3em'>Image Blocked</text></svg>" data-blocked-src="${src}" ${post}>`;
+      }
+    );
+  }
+
+  // 5. Force all links to open in a new tab with noopener noreferrer
   sanitized = sanitized.replace(/<a\s+(href="[^"]*")/gi, '<a target="_blank" rel="noopener noreferrer" $1');
 
   return sanitized.trim();
+}
+
+/**
+ * Extracts list of attachments and documents mentioned in email body or metadata
+ */
+export function extractEmailAttachments(bodyText: string = ""): AttachmentInfo[] {
+  const attachments: AttachmentInfo[] = [];
+  if (!bodyText) return attachments;
+
+  // Regex to detect common university attachment patterns e.g. "file_name.pdf (1.2 MB)", "hall_ticket.docx"
+  const attachmentRegex = /([a-zA-Z0-9_\-\.]{1,80}\.(pdf|docx?|pptx?|xlsx?|png|jpe?g|csv|zip))(?:\s*[\(\[]([0-9\.]+\s*(?:KB|MB|GB|bytes)?)[\)\]])?/gi;
+
+  const seen = new Set<string>();
+  let match: RegExpExecArray | null;
+
+  while ((match = attachmentRegex.exec(bodyText)) !== null) {
+    const rawName = match[1].trim();
+    const ext = match[2].toLowerCase();
+    const size = match[3] ? match[3].trim() : undefined;
+
+    // Filter out common false positives like domain names (e.g. vitap.ac.in)
+    if (seen.has(rawName) || rawName.includes("/") || rawName.includes("http")) continue;
+    seen.add(rawName);
+
+    attachments.push({
+      name: rawName,
+      ext: ext,
+      size,
+      type: ext.toUpperCase(),
+    } as any);
+  }
+
+  return attachments.slice(0, 10);
 }

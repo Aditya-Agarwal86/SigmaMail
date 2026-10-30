@@ -59,6 +59,14 @@ function extractBodyContent(payload: any): { plain: string; html?: string } {
     return { plain: decodeBase64Url(payload.body.data) };
   }
 
+  if (payload.mimeType === "text/html" && payload.body?.data) {
+    const html = decodeBase64Url(payload.body.data);
+    return {
+      plain: html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+      html,
+    };
+  }
+
   if (payload.parts && Array.isArray(payload.parts)) {
     let plainText = "";
     let htmlText = "";

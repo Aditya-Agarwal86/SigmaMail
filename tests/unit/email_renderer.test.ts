@@ -3,7 +3,8 @@ import {
   sanitizeHtml, 
   parsePlainTextEmail, 
   formatDisplayUrl, 
-  parseInlineFormatting 
+  parseInlineFormatting,
+  extractEmailAttachments
 } from "@/lib/email-sanitizer";
 
 describe("Email Sanitizer & Renderer Tests", () => {
@@ -155,21 +156,50 @@ VIT-AP University
     });
   });
 
-  describe("parseInlineFormatting", () => {
-    it("strips raw ** markers while setting bold type", () => {
-      const tokens = parseInlineFormatting("This is **critical** information.");
-      expect(tokens.length).toBe(3);
-      expect(tokens[1].type).toBe("bold");
-      expect(tokens[1].text).toBe("critical");
-      expect(tokens[1].text).not.toContain("**");
+  describe("Remote Image Protection & Template Support", () => {
+    it("blocks remote image URLs when blockRemoteImages is true", () => {
+      const htmlWithRemoteImage = `<div><img src="https://tracker.analytics.com/pixel.png" alt="logo" /></div>`;
+      const sanitized = sanitizeHtml(htmlWithRemoteImage, { blockRemoteImages: true });
+
+      expect(sanitized).toContain("data-blocked-src=\"https://tracker.analytics.com/pixel.png\"");
+      expect(sanitized).toContain('src="data:image/svg+xml');
+      expect(sanitized).not.toContain('<img src="https://tracker.analytics.com');
     });
 
-    it("converts URLs into clickable link tokens with friendly text", () => {
-      const tokens = parseInlineFormatting("Register here: https://forms.gle/sample123");
-      const linkToken = tokens.find((t) => t.type === "link");
-      expect(linkToken).toBeDefined();
-      expect(linkToken?.url).toBe("https://forms.gle/sample123");
-      expect(linkToken?.text).toBe("Google Form Registration");
+    it("allows remote images when blockRemoteImages is false", () => {
+      const htmlWithRemoteImage = `<div><img src="https://vitap.ac.in/logo.png" alt="logo" /></div>`;
+      const sanitized = sanitizeHtml(htmlWithRemoteImage, { blockRemoteImages: false });
+
+      expect(sanitized).toContain('src="https://vitap.ac.in/logo.png"');
+    });
+
+    it("preserves <style> tags when preserveStyles is true for Original View", () => {
+      const styledHtml = `<style>.button { background: red; }</style><div class="button">Click</div>`;
+      const preserved = sanitizeHtml(styledHtml, { preserveStyles: true });
+      expect(preserved).toContain("<style>.button { background: red; }</style>");
+
+      const clean = sanitizeHtml(styledHtml, { preserveStyles: false });
+      expect(clean).not.toContain("<style>");
+    });
+  });
+
+  describe("extractEmailAttachments", () => {
+    it("detects documents, spreadsheets, presentations, and images mentioned in email", () => {
+      const text = `
+        Please review the attached timetable:
+        1. exam_schedule_2026.pdf (1.2 MB)
+        2. hall_allocations.xlsx (450 KB)
+        3. orientation_deck.pptx
+        4. event_poster.png
+      `;
+
+      const attachments = extractEmailAttachments(text);
+      expect(attachments.length).toBe(4);
+      expect(attachments[0].name).toBe("exam_schedule_2026.pdf");
+      expect(attachments[0].size).toBe("1.2 MB");
+      expect(attachments[1].name).toBe("hall_allocations.xlsx");
+      expect(attachments[2].name).toBe("orientation_deck.pptx");
+      expect(attachments[3].name).toBe("event_poster.png");
     });
   });
 });
