@@ -107,22 +107,32 @@ export function EmailBodyRenderer({
   useEffect(() => {
     if (displayMode === "original" && iframeRef.current) {
       const iframe = iframeRef.current;
-      const updateHeight = () => {
-        try {
-          if (iframe.contentWindow?.document?.body) {
-            const height = iframe.contentWindow.document.documentElement.scrollHeight || iframe.contentWindow.document.body.scrollHeight;
-            iframe.style.height = `${Math.max(height + 40, 300)}px`;
-          }
-        } catch {
-          // Cross-origin restriction fallback
-          iframe.style.height = "700px";
+
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data?.type === "SIGMAMAIL_IFRAME_HEIGHT" && typeof event.data.height === "number") {
+          iframe.style.height = `${Math.max(event.data.height + 40, 400)}px`;
         }
       };
 
-      iframe.addEventListener("load", updateHeight);
-      const timer = setTimeout(updateHeight, 500);
+      window.addEventListener("message", handleMessage);
+
+      const updateHeightDirect = () => {
+        try {
+          if (iframe.contentWindow?.document?.body) {
+            const height = iframe.contentWindow.document.documentElement.scrollHeight || iframe.contentWindow.document.body.scrollHeight;
+            iframe.style.height = `${Math.max(height + 40, 400)}px`;
+          }
+        } catch {
+          // Fallback if cross-origin
+        }
+      };
+
+      iframe.addEventListener("load", updateHeightDirect);
+      const timer = setTimeout(updateHeightDirect, 400);
+
       return () => {
-        iframe.removeEventListener("load", updateHeight);
+        window.removeEventListener("message", handleMessage);
+        iframe.removeEventListener("load", updateHeightDirect);
         clearTimeout(timer);
       };
     }
@@ -219,7 +229,7 @@ export function EmailBodyRenderer({
             <iframe
               ref={iframeRef}
               title="Original Email View"
-              sandbox="allow-popups allow-popups-to-escape-sandbox"
+              sandbox="allow-popups allow-popups-to-escape-sandbox allow-scripts"
               srcDoc={`
                 <!DOCTYPE html>
                 <html>
@@ -252,6 +262,16 @@ export function EmailBodyRenderer({
                   </head>
                   <body>
                     ${originalSanitizedHtml}
+                    <script>
+                      function notifyHeight() {
+                        var h = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+                        window.parent.postMessage({ type: 'SIGMAMAIL_IFRAME_HEIGHT', height: h }, '*');
+                      }
+                      window.addEventListener('load', notifyHeight);
+                      setTimeout(notifyHeight, 200);
+                      setTimeout(notifyHeight, 1000);
+                      setTimeout(notifyHeight, 2500);
+                    </script>
                   </body>
                 </html>
               `}

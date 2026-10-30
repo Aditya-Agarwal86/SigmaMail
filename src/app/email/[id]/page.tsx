@@ -14,6 +14,8 @@ import { EmailBodyRenderer } from "@/components/email-body-renderer";
 import { EmailKeyInfoCard } from "@/components/email-key-info-card";
 import { EmailAttachmentsList } from "@/components/email-attachments-list";
 import { extractEmailAttachments } from "@/lib/email-sanitizer";
+import { getAuthenticatedGmailClient } from "@/lib/gmail-client";
+import { extractBodyContent } from "@/lib/gmail-sync";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +50,39 @@ export default async function EmailDetailPage({ params, searchParams }: EmailVie
 
   if (!email) {
     notFound();
+  }
+
+  // On-demand HTML & inline image hydration from Gmail API if bodyHtml is missing or contains unresolved cids
+  let renderedHtml = email.bodyHtml;
+  if (!renderedHtml || renderedHtml.includes("cid:")) {
+    try {
+      const { gmail } = await getAuthenticatedGmailClient(user.id);
+      const msgRes = await gmail.users.messages.get({
+        userId: "me",
+        id: email.gmailMessageId,
+        format: "full",
+      });
+
+      if (msgRes.data.payload) {
+        const bodies = extractBodyContent(msgRes.data.payload, email.id);
+        if (bodies.html) {
+          renderedHtml = bodies.html;
+          // Asynchronously persist to database so future visits are instantaneous
+          prisma.email
+            .update({
+              where: { id: email.id },
+              data: {
+                bodyHtml: bodies.html.slice(0, 500000),
+                bodyPlain: bodies.plain ? bodies.plain.slice(0, 10000) : email.bodyPlain,
+              },
+            })
+            .catch((err) => console.warn(`[Email Detail] Failed to cache hydrated HTML for ${email.id}:`, err));
+        }
+      }
+    } catch (hydrateErr) {
+      // Graceful fallback to existing stored body
+      console.warn(`[Email Detail] On-demand HTML hydration skipped for ${email.id}:`, hydrateErr);
+    }
   }
 
   const isDemoUser = user.email === "fictional.student@vitapstudent.ac.in";
@@ -207,14 +242,14 @@ export default async function EmailDetailPage({ params, searchParams }: EmailVie
               {/* Clean Responsive Email Body Renderer */}
               <EmailBodyRenderer
                 bodyPlain={email.bodyPlain}
-                bodyHtml={(email as any).bodyHtml}
+                bodyHtml={renderedHtml}
                 snippet={email.snippet}
               />
 
               {/* Attachments Section */}
               <EmailAttachmentsList
                 attachments={extractEmailAttachments(
-                  `${email.bodyPlain || ""} ${(email as any).bodyHtml || ""}`
+                  `${email.bodyPlain || ""} ${renderedHtml || ""}`
                 )}
               />
             </div>

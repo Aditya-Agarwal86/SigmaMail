@@ -50,46 +50,96 @@ function decodeBase64Url(data?: string | null): string {
 }
 
 /**
- * Extracts plain-text snippet/body from Gmail payload parts while minimizing stored data.
+ * Extracts plain-text and rich HTML body from Gmail payload parts.
+ * Automatically resolves inline images (CIDs) to SigmaMail secure attachment stream endpoints.
  */
-function extractBodyContent(payload: any): { plain: string; html?: string } {
+export function extractBodyContent(
+  payload: any,
+  emailId?: string
+): { plain: string; html?: string; inlineImages?: Record<string, { attachmentId: string; mimeType: string }> } {
   if (!payload) return { plain: "" };
 
-  if (payload.mimeType === "text/plain" && payload.body?.data) {
-    return { plain: decodeBase64Url(payload.body.data) };
-  }
+  const inlineImages: Record<string, { attachmentId: string; mimeType: string }> = {};
 
-  if (payload.mimeType === "text/html" && payload.body?.data) {
-    const html = decodeBase64Url(payload.body.data);
-    return {
-      plain: html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
-      html,
-    };
-  }
+  // Helper to discover all inline parts (Content-ID and attachmentId)
+  function discoverInlineParts(part: any) {
+    if (!part) return;
+    const headers = part.headers || [];
+    const contentIdHeader = headers.find((h: any) => h.name?.toLowerCase() === "content-id")?.value;
+    const attachmentId = part.body?.attachmentId;
+    const mimeType = part.mimeType || "image/png";
 
-  if (payload.parts && Array.isArray(payload.parts)) {
-    let plainText = "";
-    let htmlText = "";
-
-    for (const part of payload.parts) {
-      if (part.mimeType === "text/plain" && part.body?.data) {
-        plainText += decodeBase64Url(part.body.data) + "\n";
-      } else if (part.mimeType === "text/html" && part.body?.data) {
-        htmlText += decodeBase64Url(part.body.data) + "\n";
-      } else if (part.parts) {
-        const nested = extractBodyContent(part);
-        if (nested.plain) plainText += nested.plain + "\n";
-        if (nested.html) htmlText += nested.html + "\n";
-      }
+    if (contentIdHeader && attachmentId) {
+      // Clean <cid_xyz> into cid_xyz
+      const cleanCid = contentIdHeader.replace(/^<|>$/g, "").trim();
+      inlineImages[cleanCid] = { attachmentId, mimeType };
     }
 
-    return {
-      plain: plainText.trim(),
-      html: htmlText ? htmlText.trim() : undefined,
-    };
+    if (part.parts && Array.isArray(part.parts)) {
+      for (const p of part.parts) {
+        discoverInlineParts(p);
+      }
+    }
   }
 
-  return { plain: "" };
+  discoverInlineParts(payload);
+
+  function parseTextParts(part: any): { plain: string; html?: string } {
+    if (part.mimeType === "text/plain" && part.body?.data) {
+      return { plain: decodeBase64Url(part.body.data) };
+    }
+
+    if (part.mimeType === "text/html" && part.body?.data) {
+      const html = decodeBase64Url(part.body.data);
+      return {
+        plain: html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+        html,
+      };
+    }
+
+    if (part.parts && Array.isArray(part.parts)) {
+      let plainText = "";
+      let htmlText = "";
+
+      for (const p of part.parts) {
+        if (p.mimeType === "text/plain" && p.body?.data) {
+          plainText += decodeBase64Url(p.body.data) + "\n";
+        } else if (p.mimeType === "text/html" && p.body?.data) {
+          htmlText += decodeBase64Url(p.body.data) + "\n";
+        } else if (p.parts) {
+          const nested = parseTextParts(p);
+          if (nested.plain) plainText += nested.plain + "\n";
+          if (nested.html) htmlText += nested.html + "\n";
+        }
+      }
+
+      return {
+        plain: plainText.trim(),
+        html: htmlText ? htmlText.trim() : undefined,
+      };
+    }
+
+    return { plain: "" };
+  }
+
+  const rawBodies = parseTextParts(payload);
+  let finalHtml = rawBodies.html;
+
+  // If emailId is provided and we found inline images, resolve cid: references to the secure API route
+  if (finalHtml && emailId && Object.keys(inlineImages).length > 0) {
+    for (const [cid, info] of Object.entries(inlineImages)) {
+      const targetUrl = `/api/emails/${emailId}/attachment/${info.attachmentId}?mimeType=${encodeURIComponent(info.mimeType)}`;
+      // Match cid:cid_xyz or cid:<cid_xyz>
+      const cidRegex = new RegExp(`cid:(<?${cid}>?)`, "gi");
+      finalHtml = finalHtml.replace(cidRegex, targetUrl);
+    }
+  }
+
+  return {
+    plain: rawBodies.plain,
+    html: finalHtml,
+    inlineImages,
+  };
 }
 
 /**
@@ -289,6 +339,8 @@ export async function syncUserGmail(
             update: {
               subject,
               snippet,
+              bodyPlain: bodies.plain ? bodies.plain.slice(0, 10000) : undefined,
+              bodyHtml: bodies.html ? bodies.html.slice(0, 500000) : undefined,
               isRead,
               isStarred,
               isImportant,
@@ -303,7 +355,7 @@ export async function syncUserGmail(
               subject,
               snippet,
               bodyPlain: bodies.plain.slice(0, 10000), // Bounded text retention
-              bodyHtml: bodies.html ? bodies.html.slice(0, 25000) : null,
+              bodyHtml: bodies.html ? bodies.html.slice(0, 500000) : null,
               receivedAt,
               isRead,
               isStarred,
@@ -439,6 +491,8 @@ export async function syncUserGmail(
                     update: {
                       subject,
                       snippet,
+                      bodyPlain: bodies.plain ? bodies.plain.slice(0, 10000) : undefined,
+                      bodyHtml: bodies.html ? bodies.html.slice(0, 500000) : undefined,
                       isRead: !labelIds.includes("UNREAD"),
                       isStarred: labelIds.includes("STARRED"),
                       isImportant: labelIds.includes("IMPORTANT"),
@@ -453,7 +507,7 @@ export async function syncUserGmail(
                       subject,
                       snippet,
                       bodyPlain: bodies.plain.slice(0, 10000),
-                      bodyHtml: bodies.html ? bodies.html.slice(0, 25000) : null,
+                      bodyHtml: bodies.html ? bodies.html.slice(0, 500000) : null,
                       receivedAt,
                       isRead: !labelIds.includes("UNREAD"),
                       isStarred: labelIds.includes("STARRED"),
@@ -533,6 +587,8 @@ export async function syncUserGmail(
                 update: {
                   subject,
                   snippet,
+                  bodyPlain: bodies.plain ? bodies.plain.slice(0, 10000) : undefined,
+                  bodyHtml: bodies.html ? bodies.html.slice(0, 500000) : undefined,
                   isRead: !labelIds.includes("UNREAD"),
                   isStarred: labelIds.includes("STARRED"),
                   isImportant: labelIds.includes("IMPORTANT"),
@@ -547,7 +603,7 @@ export async function syncUserGmail(
                   subject,
                   snippet,
                   bodyPlain: bodies.plain.slice(0, 10000),
-                  bodyHtml: bodies.html ? bodies.html.slice(0, 25000) : null,
+                  bodyHtml: bodies.html ? bodies.html.slice(0, 500000) : null,
                   receivedAt,
                   isRead: !labelIds.includes("UNREAD"),
                   isStarred: labelIds.includes("STARRED"),
@@ -753,6 +809,8 @@ export async function backfillMessagesByIds(
         update: {
           subject,
           snippet,
+          bodyPlain: bodies.plain ? bodies.plain.slice(0, 10000) : undefined,
+          bodyHtml: bodies.html ? bodies.html.slice(0, 500000) : undefined,
           isRead,
           isStarred,
           isImportant,
@@ -767,7 +825,7 @@ export async function backfillMessagesByIds(
           subject,
           snippet,
           bodyPlain: bodies.plain.slice(0, 10000), // Bounded text retention
-          bodyHtml: bodies.html ? bodies.html.slice(0, 25000) : null,
+          bodyHtml: bodies.html ? bodies.html.slice(0, 500000) : null,
           receivedAt,
           isRead,
           isStarred,
