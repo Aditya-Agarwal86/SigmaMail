@@ -79,4 +79,24 @@ describe("Deadline Extractor Accuracy & Timezone Verification", () => {
     expect(candidates.length).toBeGreaterThan(0);
     expect(candidates[0].dueDate.toISOString().slice(0, 10)).toBe("2026-11-25");
   });
+
+  it("extracts exact time from 'Oct 2, 2026 at 1:02 PM' without matching date digit as hour (13:02 IST, not 02:00 AM)", () => {
+    const input = {
+      subject: "PAT VIT-AP Recruitment Drive Updates",
+      body: "On Fri, Oct 2, 2026 at 1:02 PM PAT VIT-AP <pat@vitap.ac.in> wrote: Please register before Oct 2, 2026 at 1:02 PM.",
+      receivedAt: new Date("2026-10-02T00:00:00.000Z"),
+    };
+
+    const candidates = extractDeadlines(input);
+    expect(candidates.length).toBeGreaterThan(0);
+    const deadline = candidates[0];
+    
+    // In IST (+5:30), Oct 2, 2026 13:02 IST is Oct 2, 2026 07:32:00 UTC
+    // Prior bug matched " 2" from date day number, yielding 2:00 AM IST (Oct 1 20:30 UTC)!
+    const utcHours = deadline.dueDate.getUTCHours();
+    const utcMinutes = deadline.dueDate.getUTCMinutes();
+    expect(utcHours).toBe(7); // 13 - 5.5 = 7.5 -> 7:32 UTC
+    expect(utcMinutes).toBe(32);
+    expect(deadline.hasExplicitTime).toBe(true);
+  });
 });

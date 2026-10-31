@@ -230,17 +230,17 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
   return (
     <div className="space-y-4">
       {/* Top Banner & Export Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-[#E1E5DC] bg-white shadow-card">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-[#E5E5DC] bg-white shadow-card">
         <div>
-          <h3 className="text-sm font-bold text-[#252923] flex items-center gap-2">
+          <h3 className="text-sm font-bold text-[#252A24] flex items-center gap-2">
             <span>Student Academic Calendar & Reminders</span>
             {confirmedActiveTotal > 0 && (
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#E5EBE1] text-[#244A3A] border border-[#D3DCD0]">
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#F0F0E9] text-[#687653] border border-[#E5E5DC]">
                 {confirmedActiveTotal} Active
               </span>
             )}
           </h3>
-          <p className="text-xs text-[#697168] mt-0.5">
+          <p className="text-xs text-[#74786F] mt-0.5">
             Synchronize student-confirmed deadlines with Google Calendar, Apple Calendar, or Outlook (Asia/Kolkata).
           </p>
         </div>
@@ -249,7 +249,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
           <a
             href="/api/calendar/export.ics"
             download
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#244A3A] hover:bg-[#1B382C] text-white shadow-xs transition-colors"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#687653] hover:bg-[#566244] text-white shadow-xs transition-colors"
           >
             <Download className="h-3.5 w-3.5" />
             <span>Export iCal (.ics)</span>
@@ -258,13 +258,13 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
       </div>
 
       {/* Tabs Header */}
-      <div className="flex items-center gap-1.5 border-b border-[#E1E5DC] text-xs font-medium pb-2 overflow-x-auto">
+      <div className="flex items-center gap-1.5 border-b border-[#E5E5DC] text-xs font-medium pb-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab("candidates")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
             activeTab === "candidates"
-              ? "bg-[#244A3A] text-white font-semibold shadow-xs"
-              : "text-[#697168] hover:text-[#252923] hover:bg-[#F0F2EB]"
+              ? "bg-[#687653] text-white font-semibold shadow-xs"
+              : "text-[#74786F] hover:text-[#252A24] hover:bg-[#F0F0E9]"
           }`}
         >
           <AlertCircle className="h-3.5 w-3.5 text-amber-400" />
@@ -275,8 +275,8 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
           onClick={() => setActiveTab("dueToday")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
             activeTab === "dueToday"
-              ? "bg-[#244A3A] text-white font-semibold shadow-xs"
-              : "text-[#697168] hover:text-[#252923] hover:bg-[#F0F2EB]"
+              ? "bg-[#687653] text-white font-semibold shadow-xs"
+              : "text-[#74786F] hover:text-[#252A24] hover:bg-[#F0F0E9]"
           }`}
         >
           <Clock className="h-3.5 w-3.5 text-amber-500" />
@@ -287,8 +287,8 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
           onClick={() => setActiveTab("upcoming")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
             activeTab === "upcoming"
-              ? "bg-[#244A3A] text-white font-semibold shadow-xs"
-              : "text-[#697168] hover:text-[#252923] hover:bg-[#F0F2EB]"
+              ? "bg-[#687653] text-white font-semibold shadow-xs"
+              : "text-[#74786F] hover:text-[#252A24] hover:bg-[#F0F0E9]"
           }`}
         >
           <Calendar className="h-3.5 w-3.5" />
@@ -299,8 +299,8 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
           onClick={() => setActiveTab("overdue")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
             activeTab === "overdue"
-              ? "bg-[#244A3A] text-white font-semibold shadow-xs"
-              : "text-[#697168] hover:text-[#252923] hover:bg-[#F0F2EB]"
+              ? "bg-[#687653] text-white font-semibold shadow-xs"
+              : "text-[#74786F] hover:text-[#252A24] hover:bg-[#F0F0E9]"
           }`}
         >
           <AlertTriangle className="h-3.5 w-3.5 text-rose-500" />
@@ -311,8 +311,8 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
           onClick={() => setActiveTab("historical")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
             activeTab === "historical"
-              ? "bg-[#244A3A] text-white font-semibold shadow-xs"
-              : "text-[#697168] hover:text-[#252923] hover:bg-[#F0F2EB]"
+              ? "bg-[#687653] text-white font-semibold shadow-xs"
+              : "text-[#74786F] hover:text-[#252A24] hover:bg-[#F0F0E9]"
           }`}
         >
           <History className="h-3.5 w-3.5" />
@@ -323,8 +323,8 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
           onClick={() => setActiveTab("completed")}
           className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
             activeTab === "completed"
-              ? "bg-[#244A3A] text-white font-semibold shadow-xs"
-              : "text-[#697168] hover:text-[#252923] hover:bg-[#F0F2EB]"
+              ? "bg-[#687653] text-white font-semibold shadow-xs"
+              : "text-[#74786F] hover:text-[#252A24] hover:bg-[#F0F0E9]"
           }`}
         >
           <CheckCircle2 className="h-3.5 w-3.5" />
@@ -336,12 +336,12 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
       {activeTab === "candidates" && (
         <div className="space-y-3">
           {pendingCandidatesList.length === 0 ? (
-            <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
-              <CheckCircle2 className="h-9 w-9 text-[#244A3A] mx-auto mb-2" />
-              <h4 className="text-sm font-bold text-[#252923]">
+            <div className="p-12 text-center rounded-xl border border-dashed border-[#E5E5DC] bg-white">
+              <CheckCircle2 className="h-9 w-9 text-[#687653] mx-auto mb-2" />
+              <h4 className="text-sm font-bold text-[#252A24]">
                 All Current Candidates Reviewed
               </h4>
-              <p className="text-xs text-[#697168] mt-1 max-w-sm mx-auto">
+              <p className="text-xs text-[#74786F] mt-1 max-w-sm mx-auto">
                 No pending active candidates. Older past items (&gt;30 days) are safely organized under Historical Archive.
               </p>
             </div>
@@ -357,7 +357,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                 return (
                   <div
                     key={dl.id}
-                    className="p-4 rounded-xl border border-[#E1E5DC] bg-white shadow-card flex flex-col sm:flex-row sm:items-start justify-between gap-4"
+                    className="p-4 rounded-xl border border-[#E5E5DC] bg-white shadow-card flex flex-col sm:flex-row sm:items-start justify-between gap-4"
                   >
                     <div className="space-y-1.5 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -369,36 +369,36 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-900 border border-amber-200">
                           {formatDueDate(dl.dueDate)}
                         </span>
-                        <span className="text-[10px] text-[#244A3A] bg-[#E5EBE1] border border-[#D3DCD0] px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
+                        <span className="text-[10px] text-[#687653] bg-[#F0F0E9] border border-[#E5E5DC] px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
                           <Sparkles className="h-3 w-3" />
                           <span>Candidate Suggestion ({(dl.confidenceScore * 100).toFixed(0)}%)</span>
                         </span>
                         {otherSources.length > 0 && (
-                          <span className="text-[10px] text-[#697168] bg-[#F0F2EB] border border-[#E1E5DC] px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
+                          <span className="text-[10px] text-[#74786F] bg-[#F0F0E9] border border-[#E5E5DC] px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
                             <Layers className="h-3 w-3" />
                             <span>{otherSources.length + 1} Announcements</span>
                           </span>
                         )}
                       </div>
 
-                      <h4 className="text-sm font-semibold text-[#252923]">
+                      <h4 className="text-sm font-semibold text-[#252A24]">
                         {dl.title}
                       </h4>
 
                       {dl.evidenceSnippet && (
-                        <p className="text-xs text-[#697168] font-mono bg-[#F7F8F4] p-2 rounded-lg border border-[#E1E5DC]">
+                        <p className="text-xs text-[#74786F] font-mono bg-[#F7F7F2] p-2 rounded-lg border border-[#E5E5DC]">
                           &ldquo;{dl.evidenceSnippet}&rdquo;
                         </p>
                       )}
 
-                      <div className="text-[11px] text-[#697168] flex flex-wrap items-center gap-2 pt-0.5">
-                        <span className="font-medium text-[#252923]">
+                      <div className="text-[11px] text-[#74786F] flex flex-wrap items-center gap-2 pt-0.5">
+                        <span className="font-medium text-[#252A24]">
                           Target (IST): {formatDate(dl.dueDate)}
                         </span>
                         <span>•</span>
                         <Link
                           href={`/email/${dl.email.id}`}
-                          className="hover:text-[#244A3A] hover:underline truncate max-w-md flex items-center gap-1"
+                          className="hover:text-[#687653] hover:underline truncate max-w-md flex items-center gap-1"
                         >
                           <span>Circular: {dl.email.subject}</span>
                           <ExternalLink className="h-3 w-3 shrink-0" />
@@ -407,8 +407,8 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
 
                       {/* Repeated Announcement Source Links */}
                       {otherSources.length > 0 && (
-                        <div className="text-[11px] text-[#697168] pt-1.5 border-t border-[#E1E5DC]">
-                          <span className="font-medium text-[#252923]">
+                        <div className="text-[11px] text-[#74786F] pt-1.5 border-t border-[#E5E5DC]">
+                          <span className="font-medium text-[#252A24]">
                             Also announced in {otherSources.length} other email(s):
                           </span>
                           <div className="flex flex-wrap gap-1.5 mt-1">
@@ -416,13 +416,13 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                               <Link
                                 key={os.id}
                                 href={`/email/${os.email.id}`}
-                                className="px-2 py-0.5 rounded bg-[#F7F8F4] border border-[#E1E5DC] text-[10px] text-[#697168] hover:text-[#244A3A] truncate max-w-xs"
+                                className="px-2 py-0.5 rounded bg-[#F7F7F2] border border-[#E5E5DC] text-[10px] text-[#74786F] hover:text-[#687653] truncate max-w-xs"
                               >
                                 {os.email.subject}
                               </Link>
                             ))}
                             {otherSources.length > 3 && (
-                              <span className="text-[10px] text-[#697168] self-center">
+                              <span className="text-[10px] text-[#74786F] self-center">
                                 +{otherSources.length - 3} more
                               </span>
                             )}
@@ -436,7 +436,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         size="sm"
                         disabled={loadingId === dl.id}
                         onClick={() => handleAction(dl.id, "CONFIRM")}
-                        className="gap-1.5 text-xs bg-[#244A3A] hover:bg-[#1B382C] text-white shadow-xs"
+                        className="gap-1.5 text-xs bg-[#687653] hover:bg-[#566244] text-white shadow-xs"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         <span>Confirm Deadline</span>
@@ -447,7 +447,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         variant="outline"
                         disabled={loadingId === dl.id}
                         onClick={() => handleAction(dl.id, "DISMISS")}
-                        className="gap-1.5 text-xs text-[#697168] hover:text-rose-700"
+                        className="gap-1.5 text-xs text-[#74786F] hover:text-rose-700"
                       >
                         <XCircle className="h-3.5 w-3.5" />
                         <span>Dismiss</span>
@@ -465,10 +465,10 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
       {activeTab === "dueToday" && (
         <div className="space-y-3">
           {dueTodayList.length === 0 ? (
-            <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
-              <Clock className="h-9 w-9 text-[#697168] mx-auto mb-2" />
-              <h4 className="text-sm font-bold text-[#252923]">No Deadlines Due Today</h4>
-              <p className="text-xs text-[#697168] mt-1 max-w-sm mx-auto">
+            <div className="p-12 text-center rounded-xl border border-dashed border-[#E5E5DC] bg-white">
+              <Clock className="h-9 w-9 text-[#74786F] mx-auto mb-2" />
+              <h4 className="text-sm font-bold text-[#252A24]">No Deadlines Due Today</h4>
+              <p className="text-xs text-[#74786F] mt-1 max-w-sm mx-auto">
                 You have no confirmed tasks or submissions due today in Asia/Kolkata timezone.
               </p>
             </div>
@@ -492,10 +492,10 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                           Due Today
                         </span>
                       </div>
-                      <h4 className="text-sm font-semibold text-[#252923]">
+                      <h4 className="text-sm font-semibold text-[#252A24]">
                         {dl.title}
                       </h4>
-                      <p className="text-xs text-[#697168]">
+                      <p className="text-xs text-[#74786F]">
                         Target Time: {formatDate(dl.dueDate)} • Circular: {dl.email.subject}
                       </p>
                     </div>
@@ -504,14 +504,14 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         size="sm"
                         disabled={loadingId === dl.id}
                         onClick={() => handleAction(dl.id, "COMPLETE")}
-                        className="gap-1.5 text-xs bg-[#244A3A] hover:bg-[#1B382C] text-white shadow-xs"
+                        className="gap-1.5 text-xs bg-[#687653] hover:bg-[#566244] text-white shadow-xs"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         <span>Mark Complete</span>
                       </Button>
                       <Link
                         href={`/email/${dl.email.id}`}
-                        className="p-2 text-[#697168] hover:text-[#244A3A]"
+                        className="p-2 text-[#74786F] hover:text-[#687653]"
                         title="View source email"
                       >
                         <ArrowRight className="h-4 w-4" />
@@ -529,12 +529,12 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
       {activeTab === "upcoming" && (
         <div className="space-y-3">
           {upcomingList.length === 0 ? (
-            <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
-              <Calendar className="h-9 w-9 text-[#697168] mx-auto mb-2" />
-              <h4 className="text-sm font-bold text-[#252923]">
+            <div className="p-12 text-center rounded-xl border border-dashed border-[#E5E5DC] bg-white">
+              <Calendar className="h-9 w-9 text-[#74786F] mx-auto mb-2" />
+              <h4 className="text-sm font-bold text-[#252A24]">
                 No Upcoming Confirmed Deadlines
               </h4>
-              <p className="text-xs text-[#697168] mt-1 max-w-sm mx-auto">
+              <p className="text-xs text-[#74786F] mt-1 max-w-sm mx-auto">
                 Review and confirm pending candidates from the &quot;Pending Candidates&quot; tab to activate reminders and include them in your export.
               </p>
             </div>
@@ -547,37 +547,37 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                 return (
                   <div
                     key={dl.id}
-                    className="p-4 rounded-xl border border-[#E1E5DC] bg-white shadow-card space-y-3"
+                    className="p-4 rounded-xl border border-[#E5E5DC] bg-white shadow-card space-y-3"
                   >
                     {isEditing ? (
-                      <div className="space-y-3 bg-[#F7F8F4] p-3.5 rounded-lg border border-[#E1E5DC]">
+                      <div className="space-y-3 bg-[#F7F7F2] p-3.5 rounded-lg border border-[#E5E5DC]">
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-[#252923]">
+                          <label className="text-xs font-semibold text-[#252A24]">
                             Title
                           </label>
                           <input
                             type="text"
                             value={editTitle}
                             onChange={(e) => setEditTitle(e.target.value)}
-                            className="w-full text-xs px-2.5 py-1.5 rounded-md border border-[#E1E5DC] bg-white text-[#252923] focus:ring-1 focus:ring-[#244A3A] focus:outline-none"
+                            className="w-full text-xs px-2.5 py-1.5 rounded-md border border-[#E5E5DC] bg-white text-[#252A24] focus:ring-1 focus:ring-[#687653] focus:outline-none"
                           />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold text-[#252923]">
+                            <label className="text-xs font-semibold text-[#252A24]">
                               Target Date & Time (Local)
                             </label>
                             <input
                               type="datetime-local"
                               value={editDueDate}
                               onChange={(e) => setEditDueDate(e.target.value)}
-                              className="w-full text-xs px-2.5 py-1.5 rounded-md border border-[#E1E5DC] bg-white text-[#252923] focus:ring-1 focus:ring-[#244A3A] focus:outline-none"
+                              className="w-full text-xs px-2.5 py-1.5 rounded-md border border-[#E5E5DC] bg-white text-[#252A24] focus:ring-1 focus:ring-[#687653] focus:outline-none"
                             />
                           </div>
 
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold text-[#252923]">
+                            <label className="text-xs font-semibold text-[#252A24]">
                               Reminder Timing
                             </label>
                             <select
@@ -586,7 +586,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                                 const val = parseInt(e.target.value, 10);
                                 setEditReminder(val === 0 ? null : val);
                               }}
-                              className="w-full text-xs px-2.5 py-1.5 rounded-md border border-[#E1E5DC] bg-white text-[#252923] focus:ring-1 focus:ring-[#244A3A] focus:outline-none"
+                              className="w-full text-xs px-2.5 py-1.5 rounded-md border border-[#E5E5DC] bg-white text-[#252A24] focus:ring-1 focus:ring-[#687653] focus:outline-none"
                             >
                               <option value="1440">24 hours before (Default)</option>
                               <option value="2880">2 days before</option>
@@ -610,7 +610,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                             size="sm"
                             disabled={loadingId === dl.id}
                             onClick={() => handleSaveEdit(dl.id)}
-                            className="h-7 text-xs bg-[#244A3A] hover:bg-[#1B382C] text-white gap-1"
+                            className="h-7 text-xs bg-[#687653] hover:bg-[#566244] text-white gap-1"
                           >
                             <Check className="h-3 w-3" />
                             <span>Save</span>
@@ -626,15 +626,15 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                             >
                               {meta.label}
                             </span>
-                            <span className="px-2 py-0.5 rounded text-[11px] font-medium border border-[#E1E5DC] bg-[#F7F8F4] text-[#252923]">
+                            <span className="px-2 py-0.5 rounded text-[11px] font-medium border border-[#E5E5DC] bg-[#F7F7F2] text-[#252A24]">
                               {formatDueDate(dl.dueDate)}
                             </span>
-                            <span className="text-[10px] text-[#244A3A] bg-[#E5EBE1] border border-[#D3DCD0] px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
+                            <span className="text-[10px] text-[#687653] bg-[#F0F0E9] border border-[#E5E5DC] px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
                               <CheckCircle2 className="h-3 w-3" />
                               <span>Confirmed Active</span>
                             </span>
                             {dl.reminderMinutesBefore && dl.reminderMinutesBefore > 0 && (
-                              <span className="text-[10px] text-[#697168] bg-[#F0F2EB] px-1.5 py-0.5 rounded flex items-center gap-1">
+                              <span className="text-[10px] text-[#74786F] bg-[#F0F0E9] px-1.5 py-0.5 rounded flex items-center gap-1">
                                 <Bell className="h-3 w-3" />
                                 <span>
                                   {dl.reminderMinutesBefore >= 1440
@@ -645,17 +645,17 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                             )}
                           </div>
 
-                          <h4 className="text-sm font-semibold text-[#252923]">
+                          <h4 className="text-sm font-semibold text-[#252A24]">
                             {dl.title}
                           </h4>
 
                           {dl.description && (
-                            <p className="text-xs text-[#697168]">
+                            <p className="text-xs text-[#74786F]">
                               {dl.description}
                             </p>
                           )}
 
-                          <div className="text-[11px] text-[#697168] flex items-center gap-1.5 pt-0.5">
+                          <div className="text-[11px] text-[#74786F] flex items-center gap-1.5 pt-0.5">
                             <span>Target: {formatDate(dl.dueDate)}</span>
                             <span>•</span>
                             <span className="truncate">Source: {dl.email.subject}</span>
@@ -667,7 +667,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                             size="sm"
                             variant="ghost"
                             onClick={() => startEdit(dl)}
-                            className="h-8 gap-1.5 text-xs text-[#697168] hover:text-[#252923]"
+                            className="h-8 gap-1.5 text-xs text-[#74786F] hover:text-[#252A24]"
                           >
                             <Edit2 className="h-3.5 w-3.5" />
                             <span>Edit</span>
@@ -678,7 +678,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                             variant="outline"
                             disabled={loadingId === dl.id}
                             onClick={() => handleAction(dl.id, "COMPLETE")}
-                            className="h-8 gap-1.5 text-xs text-[#244A3A] border-[#D3DCD0] hover:bg-[#E5EBE1]"
+                            className="h-8 gap-1.5 text-xs text-[#687653] border-[#E5E5DC] hover:bg-[#F0F0E9]"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             <span>Mark Complete</span>
@@ -686,7 +686,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
 
                           <Link
                             href={`/email/${dl.email.id}`}
-                            className="p-1.5 text-[#697168] hover:text-[#244A3A]"
+                            className="p-1.5 text-[#74786F] hover:text-[#687653]"
                             title="View source email"
                           >
                             <ArrowRight className="h-4 w-4" />
@@ -706,10 +706,10 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
       {activeTab === "overdue" && (
         <div className="space-y-3">
           {overdueList.length === 0 ? (
-            <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
-              <CheckCircle2 className="h-9 w-9 text-[#244A3A] mx-auto mb-2" />
-              <h4 className="text-sm font-bold text-[#252923]">No Overdue Deadlines</h4>
-              <p className="text-xs text-[#697168] mt-1 max-w-sm mx-auto">
+            <div className="p-12 text-center rounded-xl border border-dashed border-[#E5E5DC] bg-white">
+              <CheckCircle2 className="h-9 w-9 text-[#687653] mx-auto mb-2" />
+              <h4 className="text-sm font-bold text-[#252A24]">No Overdue Deadlines</h4>
+              <p className="text-xs text-[#74786F] mt-1 max-w-sm mx-auto">
                 Great job! All your confirmed deadlines are currently up to date.
               </p>
             </div>
@@ -734,11 +734,11 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         </span>
                       </div>
 
-                      <h4 className="text-sm font-semibold text-[#252923] truncate">
+                      <h4 className="text-sm font-semibold text-[#252A24] truncate">
                         {dl.title}
                       </h4>
 
-                      <div className="text-[11px] text-[#697168] flex items-center gap-1.5 pt-0.5">
+                      <div className="text-[11px] text-[#74786F] flex items-center gap-1.5 pt-0.5">
                         <span>Original Target: {formatDate(dl.dueDate)}</span>
                         <span>•</span>
                         <span className="truncate">From: {dl.email.subject}</span>
@@ -750,7 +750,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         size="sm"
                         disabled={loadingId === dl.id}
                         onClick={() => handleAction(dl.id, "COMPLETE")}
-                        className="gap-1.5 text-xs bg-[#244A3A] hover:bg-[#1B382C] text-white shadow-xs"
+                        className="gap-1.5 text-xs bg-[#687653] hover:bg-[#566244] text-white shadow-xs"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         <span>Mark Complete</span>
@@ -761,7 +761,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         variant="outline"
                         disabled={loadingId === dl.id}
                         onClick={() => handleAction(dl.id, "DISMISS")}
-                        className="gap-1.5 text-xs text-[#697168] hover:text-rose-700"
+                        className="gap-1.5 text-xs text-[#74786F] hover:text-rose-700"
                       >
                         <XCircle className="h-3.5 w-3.5" />
                         <span>Dismiss</span>
@@ -769,7 +769,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
 
                       <Link
                         href={`/email/${dl.email.id}`}
-                        className="p-2 text-[#697168] hover:text-[#244A3A]"
+                        className="p-2 text-[#74786F] hover:text-[#687653]"
                         title="View source email"
                       >
                         <ArrowRight className="h-4 w-4" />
@@ -786,20 +786,20 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
       {/* Tab: Historical Archive */}
       {activeTab === "historical" && (
         <div className="space-y-3">
-          <div className="p-3.5 rounded-lg border border-[#E1E5DC] bg-white text-xs text-[#697168] flex items-center justify-between">
+          <div className="p-3.5 rounded-lg border border-[#E5E5DC] bg-white text-xs text-[#74786F] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Archive className="h-4 w-4 text-[#244A3A] shrink-0" />
+              <Archive className="h-4 w-4 text-[#687653] shrink-0" />
               <span>
-                <strong className="text-[#252923]">Historical Archive:</strong> Candidate dates &gt;30 days in the past or dismissed records preserved for audit and reference. Excluded from reminders and active exports.
+                <strong className="text-[#252A24]">Historical Archive:</strong> Candidate dates &gt;30 days in the past or dismissed records preserved for audit and reference. Excluded from reminders and active exports.
               </span>
             </div>
           </div>
 
           {historicalList.length === 0 ? (
-            <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
-              <History className="h-9 w-9 text-[#697168] mx-auto mb-2" />
-              <h4 className="text-sm font-bold text-[#252923]">No Historical Deadlines</h4>
-              <p className="text-xs text-[#697168] mt-1 max-w-sm mx-auto">
+            <div className="p-12 text-center rounded-xl border border-dashed border-[#E5E5DC] bg-white">
+              <History className="h-9 w-9 text-[#74786F] mx-auto mb-2" />
+              <h4 className="text-sm font-bold text-[#252A24]">No Historical Deadlines</h4>
+              <p className="text-xs text-[#74786F] mt-1 max-w-sm mx-auto">
                 No past candidate dates or dismissed records.
               </p>
             </div>
@@ -810,7 +810,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                 return (
                   <div
                     key={dl.id}
-                    className="p-4 rounded-xl border border-[#E1E5DC] bg-white shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 opacity-90"
+                    className="p-4 rounded-xl border border-[#E5E5DC] bg-white shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 opacity-90"
                   >
                     <div className="space-y-1.5 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -819,25 +819,25 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         >
                           {meta.label}
                         </span>
-                        <span className="px-2 py-0.5 rounded text-[11px] font-medium text-[#697168] border border-[#E1E5DC] bg-[#F7F8F4]">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-medium text-[#74786F] border border-[#E5E5DC] bg-[#F7F7F2]">
                           {formatDueDate(dl.dueDate)}
                         </span>
-                        <span className="text-[10px] text-[#697168] bg-[#F0F2EB] px-1.5 py-0.5 rounded font-medium">
+                        <span className="text-[10px] text-[#74786F] bg-[#F0F0E9] px-1.5 py-0.5 rounded font-medium">
                           Historical Reference ({formatDate(dl.dueDate)})
                         </span>
                       </div>
 
-                      <h4 className="text-sm font-medium text-[#252923] truncate">
+                      <h4 className="text-sm font-medium text-[#252A24] truncate">
                         {dl.title}
                       </h4>
 
                       {dl.evidenceSnippet && (
-                        <p className="text-xs text-[#697168] font-mono line-clamp-1">
+                        <p className="text-xs text-[#74786F] font-mono line-clamp-1">
                           &ldquo;{dl.evidenceSnippet}&rdquo;
                         </p>
                       )}
 
-                      <div className="text-[11px] text-[#697168] flex items-center gap-1.5 pt-0.5">
+                      <div className="text-[11px] text-[#74786F] flex items-center gap-1.5 pt-0.5">
                         <span className="truncate">From: {dl.email.subject}</span>
                       </div>
                     </div>
@@ -848,7 +848,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         variant="ghost"
                         disabled={loadingId === dl.id}
                         onClick={() => handleAction(dl.id, "RESTORE")}
-                        className="gap-1.5 text-xs text-[#697168] hover:text-[#252923]"
+                        className="gap-1.5 text-xs text-[#74786F] hover:text-[#252A24]"
                         title="Restore to active candidates"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
@@ -857,7 +857,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
 
                       <Link
                         href={`/email/${dl.email.id}`}
-                        className="p-2 text-[#697168] hover:text-[#244A3A]"
+                        className="p-2 text-[#74786F] hover:text-[#687653]"
                         title="View source email"
                       >
                         <ArrowRight className="h-4 w-4" />
@@ -867,7 +867,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                 );
               })}
               {historicalList.length > 100 && (
-                <div className="p-3 text-center text-xs text-[#697168] border border-[#E1E5DC] rounded-lg bg-white">
+                <div className="p-3 text-center text-xs text-[#74786F] border border-[#E5E5DC] rounded-lg bg-white">
                   Showing top 100 of {historicalList.length} historical reference items. All items are permanently accessible via their source emails.
                 </div>
               )}
@@ -880,10 +880,10 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
       {activeTab === "completed" && (
         <div className="space-y-3">
           {completedList.length === 0 ? (
-            <div className="p-12 text-center rounded-xl border border-dashed border-[#E1E5DC] bg-white">
-              <CheckCircle2 className="h-9 w-9 text-[#697168] mx-auto mb-2" />
-              <h4 className="text-sm font-bold text-[#252923]">No Completed Deadlines</h4>
-              <p className="text-xs text-[#697168] mt-1 max-w-sm mx-auto">
+            <div className="p-12 text-center rounded-xl border border-dashed border-[#E5E5DC] bg-white">
+              <CheckCircle2 className="h-9 w-9 text-[#74786F] mx-auto mb-2" />
+              <h4 className="text-sm font-bold text-[#252A24]">No Completed Deadlines</h4>
+              <p className="text-xs text-[#74786F] mt-1 max-w-sm mx-auto">
                 Completed deadlines will appear here for your academic tracking and records.
               </p>
             </div>
@@ -894,7 +894,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                 return (
                   <div
                     key={dl.id}
-                    className="p-4 rounded-xl border border-[#E1E5DC] bg-white shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 opacity-80"
+                    className="p-4 rounded-xl border border-[#E5E5DC] bg-white shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 opacity-80"
                   >
                     <div className="space-y-1.5 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -903,16 +903,16 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         >
                           {meta.label}
                         </span>
-                        <span className="px-2 py-0.5 rounded text-[11px] font-medium text-[#244A3A] bg-[#E5EBE1] border border-[#D3DCD0]">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-medium text-[#687653] bg-[#F0F0E9] border border-[#E5E5DC]">
                           Completed
                         </span>
                       </div>
 
-                      <h4 className="text-sm font-medium text-[#697168] line-through truncate">
+                      <h4 className="text-sm font-medium text-[#74786F] line-through truncate">
                         {dl.title}
                       </h4>
 
-                      <div className="text-[11px] text-[#697168] flex items-center gap-1.5 pt-0.5">
+                      <div className="text-[11px] text-[#74786F] flex items-center gap-1.5 pt-0.5">
                         <span>Original Target: {formatDate(dl.dueDate)}</span>
                         <span>•</span>
                         <span className="truncate">From: {dl.email.subject}</span>
@@ -925,7 +925,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
                         variant="ghost"
                         disabled={loadingId === dl.id}
                         onClick={() => handleAction(dl.id, "REACTIVATE")}
-                        className="gap-1.5 text-xs text-[#697168] hover:text-[#252923]"
+                        className="gap-1.5 text-xs text-[#74786F] hover:text-[#252A24]"
                         title="Reopen deadline"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
@@ -934,7 +934,7 @@ export function DeadlinesListClient({ deadlines }: DeadlinesListClientProps) {
 
                       <Link
                         href={`/email/${dl.email.id}`}
-                        className="p-2 text-[#697168] hover:text-[#244A3A]"
+                        className="p-2 text-[#74786F] hover:text-[#687653]"
                         title="View source email"
                       >
                         <ArrowRight className="h-4 w-4" />

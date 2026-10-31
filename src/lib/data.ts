@@ -12,6 +12,8 @@ export interface GetEmailsParams {
   subCategory?: string;
   school?: SchoolCode;
   isImportant?: boolean;
+  isRead?: boolean;
+  isStarred?: boolean;
   priorityLevel?: PriorityLevel;
   hasDeadlines?: boolean;
   facultyEmail?: string;
@@ -19,6 +21,7 @@ export interface GetEmailsParams {
   query?: string;
   opportunityId?: string;
   placementStat?: "ongoing" | "upcoming" | "completed" | "closing_soon" | "total";
+  sortBy?: "newest" | "oldest" | "priority" | "deadline";
   page?: number;
   pageSize?: number;
 }
@@ -65,6 +68,14 @@ export async function getEmails(params?: GetEmailsParams) {
 
   if (params?.isImportant !== undefined) {
     whereClause.isImportant = params.isImportant;
+  }
+
+  if (params?.isRead !== undefined) {
+    whereClause.isRead = params.isRead;
+  }
+
+  if (params?.isStarred !== undefined) {
+    whereClause.isStarred = params.isStarred;
   }
 
   if (params?.priorityLevel) {
@@ -124,11 +135,18 @@ export async function getEmails(params?: GetEmailsParams) {
   const pageSize = Math.max(1, Math.min(params?.pageSize || 25, 100));
   const skip = (page - 1) * pageSize;
 
+  let orderBy: any = { receivedAt: "desc" };
+  if (params?.sortBy === "oldest") {
+    orderBy = { receivedAt: "asc" };
+  } else if (params?.sortBy === "priority") {
+    orderBy = [{ priorityScore: "desc" }, { receivedAt: "desc" }];
+  }
+
   const [totalCount, emails] = await Promise.all([
     prisma.email.count({ where: whereClause }),
     prisma.email.findMany({
       where: whereClause,
-      orderBy: { receivedAt: "desc" },
+      orderBy,
       skip,
       take: pageSize,
       include: {

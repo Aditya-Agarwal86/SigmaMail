@@ -20,6 +20,8 @@ export default async function InboxPage({
     subCategory?: string;
     school?: string;
     priority?: string;
+    status?: string;
+    sortBy?: "newest" | "oldest" | "priority";
     deadlines?: string;
     page?: string;
   };
@@ -29,8 +31,13 @@ export default async function InboxPage({
   const subCategoryParam = searchParams.subCategory;
   const schoolParam = searchParams.school as SchoolCode | undefined;
   const priorityParam = searchParams.priority as PriorityLevel | undefined;
+  const statusParam = searchParams.status;
+  const sortByParam = searchParams.sortBy;
   const hasDeadlines = searchParams.deadlines === "true";
   const page = parseInt(searchParams.page || "1", 10) || 1;
+
+  const isReadFilter = statusParam === "read" ? true : statusParam === "unread" ? false : undefined;
+  const isStarredFilter = statusParam === "starred" ? true : undefined;
 
   const user = await getCurrentUser();
   const userId = user?.id;
@@ -52,6 +59,9 @@ export default async function InboxPage({
       subCategory: subCategoryParam,
       school: schoolParam,
       priorityLevel: priorityParam && Object.values(PriorityLevel).includes(priorityParam) ? priorityParam : undefined,
+      isRead: isReadFilter,
+      isStarred: isStarredFilter,
+      sortBy: sortByParam,
       hasDeadlines,
       page,
       pageSize: 25,
@@ -212,17 +222,17 @@ export default async function InboxPage({
                         <Link
                           key={e.id}
                           href={`/email/${e.id}`}
-                          className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 hover:bg-muted border border-border text-xs transition-colors group"
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-white hover:bg-[#F0F0E9] border border-[#E5E5DC] text-xs transition-colors group"
                         >
                           <div className="truncate min-w-0 pr-2">
-                            <span className="font-semibold text-foreground group-hover:text-primary truncate block">
+                            <span className="font-semibold text-[#252A24] group-hover:text-[#687653] truncate block">
                               {e.subject}
                             </span>
-                            <span className="text-[10px] text-muted-foreground truncate block">
+                            <span className="text-[10px] text-[#74786F] truncate block">
                               From: {e.sender}
                             </span>
                           </div>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 shrink-0">
                             {e.priorityLevel}
                           </span>
                         </Link>
@@ -253,21 +263,25 @@ export default async function InboxPage({
                         <Link
                           key={d.id}
                           href="/deadlines"
-                          className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 hover:bg-muted border border-border text-xs transition-colors group"
+                          className="flex items-center justify-between p-2.5 rounded-lg bg-white hover:bg-[#F0F0E9] border border-[#E5E5DC] text-xs transition-colors group"
                         >
                           <div className="truncate min-w-0 pr-2">
-                            <span className="font-semibold text-foreground group-hover:text-primary truncate block">
+                            <span className="font-semibold text-[#252A24] group-hover:text-[#687653] truncate block">
                               {d.title}
                             </span>
-                            <span className="text-[10px] text-muted-foreground block">
-                              {new Date(d.dueDate).toLocaleDateString()}
+                            <span className="text-[10px] text-[#74786F] block">
+                              {new Date(d.dueDate).toLocaleDateString("en-IN", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
                             </span>
                           </div>
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-semibold border shrink-0 ${
                               d.isCandidate
-                                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-                                : "bg-primary/10 text-primary border-primary/20"
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : "bg-[#F0F0E9] text-[#687653] border-[#E5E5DC]"
                             }`}
                           >
                             {d.isCandidate ? "Candidate" : "Confirmed"}
@@ -327,7 +341,7 @@ export default async function InboxPage({
                     <div className="flex items-center gap-1.5">
                       {page > 1 && (
                         <Link
-                          href={`/?page=${page - 1}${categoryParam ? `&category=${categoryParam}` : ""}${subCategoryParam ? `&subCategory=${encodeURIComponent(subCategoryParam)}` : ""}${schoolParam ? `&school=${encodeURIComponent(schoolParam)}` : ""}${priorityParam ? `&priority=${encodeURIComponent(priorityParam)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
+                          href={`/?page=${page - 1}${categoryParam ? `&category=${categoryParam}` : ""}${subCategoryParam ? `&subCategory=${encodeURIComponent(subCategoryParam)}` : ""}${schoolParam ? `&school=${encodeURIComponent(schoolParam)}` : ""}${priorityParam ? `&priority=${encodeURIComponent(priorityParam)}` : ""}${statusParam ? `&status=${encodeURIComponent(statusParam)}` : ""}${sortByParam ? `&sortBy=${encodeURIComponent(sortByParam)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
                           className="px-3 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted flex items-center gap-1 font-medium transition-colors"
                         >
                           <ChevronLeft className="h-4 w-4" /> Previous
@@ -335,7 +349,7 @@ export default async function InboxPage({
                       )}
                       {page < totalPages && (
                         <Link
-                          href={`/?page=${page + 1}${categoryParam ? `&category=${categoryParam}` : ""}${subCategoryParam ? `&subCategory=${encodeURIComponent(subCategoryParam)}` : ""}${schoolParam ? `&school=${encodeURIComponent(schoolParam)}` : ""}${priorityParam ? `&priority=${encodeURIComponent(priorityParam)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
+                          href={`/?page=${page + 1}${categoryParam ? `&category=${categoryParam}` : ""}${subCategoryParam ? `&subCategory=${encodeURIComponent(subCategoryParam)}` : ""}${schoolParam ? `&school=${encodeURIComponent(schoolParam)}` : ""}${priorityParam ? `&priority=${encodeURIComponent(priorityParam)}` : ""}${statusParam ? `&status=${encodeURIComponent(statusParam)}` : ""}${sortByParam ? `&sortBy=${encodeURIComponent(sortByParam)}` : ""}${hasDeadlines ? "&deadlines=true" : ""}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
                           className="px-3 py-1.5 rounded-lg border border-border bg-card text-foreground hover:bg-muted flex items-center gap-1 font-medium transition-colors"
                         >
                           Next <ChevronRight className="h-4 w-4" />

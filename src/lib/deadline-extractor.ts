@@ -1,6 +1,7 @@
 export interface ExtractedDeadlineCandidate {
   title: string;
   dueDate: Date;
+  hasExplicitTime?: boolean;
   confidenceScore: number; // 0.0 to 1.0
   evidenceSnippet: string;
   actionText: string;
@@ -63,11 +64,13 @@ function isValidCalendarDate(year: number, month: number, day: number): boolean 
 }
 
 /**
- * Parses optional time string (e.g. "5:00 PM", "11:59 pm", "23:59", "5 PM") into hours and minutes
+ * Parses optional time string (e.g. "5:00 PM", "11:59 pm", "23:59", "5 PM") into hours and minutes.
+ * Also returns whether an explicit time was found or defaulted.
  */
-function parseTimeString(timeText: string): { hour: number; minute: number } {
-  const match = timeText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
-  if (!match) return { hour: 23, minute: 59 }; // Default to end-of-day for academic deadlines
+function parseTimeString(timeText: string): { hour: number; minute: number; hasExplicitTime: boolean } {
+  // Only accept time patterns with explicit AM/PM or HH:MM format
+  const match = timeText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i) || timeText.match(/(\d{1,2}):(\d{2})\b/);
+  if (!match) return { hour: 23, minute: 59, hasExplicitTime: false }; // Default to end-of-day for academic deadlines
 
   let hour = parseInt(match[1], 10);
   const minute = match[2] ? parseInt(match[2], 10) : 0;
@@ -77,9 +80,9 @@ function parseTimeString(timeText: string): { hour: number; minute: number } {
   if (ampm === "am" && hour === 12) hour = 0;
 
   if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-    return { hour, minute };
+    return { hour, minute, hasExplicitTime: true };
   }
-  return { hour: 23, minute: 59 };
+  return { hour: 23, minute: 59, hasExplicitTime: false };
 }
 
 /**
@@ -111,8 +114,9 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
       const year = parseInt(match[3], 10);
 
       if (isValidCalendarDate(year, month, day)) {
-        const timeMatch = line.slice(match.index).match(/\b(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/i);
-        const { hour, minute } = parseTimeString(timeMatch ? timeMatch[1] : "");
+        const afterMatch = line.slice(match.index + match[0].length);
+        const timeMatch = afterMatch.match(/^\s*(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?|\d{1,2}:\d{2})\b/i);
+        const { hour, minute, hasExplicitTime } = parseTimeString(timeMatch ? timeMatch[1] : "");
 
         const utcMs = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS;
         const dateObj = new Date(utcMs);
@@ -120,12 +124,13 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
 
         if (!seenDates.has(dateKey)) {
           seenDates.add(dateKey);
-          const snippet = line.slice(Math.max(0, match.index - 30), Math.min(line.length, match.index + 50));
+          const snippet = line.slice(Math.max(0, match.index - 30), Math.min(line.length, match.index + match[0].length + 40));
           const confidence = hasActionPrefix ? 0.90 : 0.65;
 
           candidates.push({
             title: deriveDeadlineTitle(input.subject, line),
             dueDate: dateObj,
+            hasExplicitTime,
             confidenceScore: confidence,
             evidenceSnippet: snippet.trim(),
             actionText: extractActionText(line),
@@ -142,8 +147,9 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
       const day = parseInt(match[3], 10);
 
       if (isValidCalendarDate(year, month, day)) {
-        const timeMatch = line.slice(match.index).match(/\b(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/i);
-        const { hour, minute } = parseTimeString(timeMatch ? timeMatch[1] : "");
+        const afterMatch = line.slice(match.index + match[0].length);
+        const timeMatch = afterMatch.match(/^\s*(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?|\d{1,2}:\d{2})\b/i);
+        const { hour, minute, hasExplicitTime } = parseTimeString(timeMatch ? timeMatch[1] : "");
 
         const utcMs = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS;
         const dateObj = new Date(utcMs);
@@ -151,12 +157,13 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
 
         if (!seenDates.has(dateKey)) {
           seenDates.add(dateKey);
-          const snippet = line.slice(Math.max(0, match.index - 30), Math.min(line.length, match.index + 50));
+          const snippet = line.slice(Math.max(0, match.index - 30), Math.min(line.length, match.index + match[0].length + 40));
           const confidence = hasActionPrefix ? 0.90 : 0.65;
 
           candidates.push({
             title: deriveDeadlineTitle(input.subject, line),
             dueDate: dateObj,
+            hasExplicitTime,
             confidenceScore: confidence,
             evidenceSnippet: snippet.trim(),
             actionText: extractActionText(line),
@@ -174,8 +181,9 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
       const year = match[3] ? parseInt(match[3], 10) : receivedYear;
 
       if (month !== undefined && isValidCalendarDate(year, month, day)) {
-        const timeMatch = line.slice(match.index).match(/\b(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/i);
-        const { hour, minute } = parseTimeString(timeMatch ? timeMatch[1] : "");
+        const afterMatch = line.slice(match.index + match[0].length);
+        const timeMatch = afterMatch.match(/^\s*(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?|\d{1,2}:\d{2})\b/i);
+        const { hour, minute, hasExplicitTime } = parseTimeString(timeMatch ? timeMatch[1] : "");
 
         // Convert IST (UTC+5:30) date & time to UTC Date timestamp
         // UTC milliseconds = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS
@@ -185,12 +193,13 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
 
         if (!seenDates.has(dateKey)) {
           seenDates.add(dateKey);
-          const snippet = line.slice(Math.max(0, match.index - 30), Math.min(line.length, match.index + 50));
+          const snippet = line.slice(Math.max(0, match.index - 30), Math.min(line.length, match.index + match[0].length + 40));
           const confidence = hasActionPrefix ? 0.95 : 0.70;
 
           candidates.push({
             title: deriveDeadlineTitle(input.subject, line),
             dueDate: dateObj,
+            hasExplicitTime,
             confidenceScore: confidence,
             evidenceSnippet: snippet.trim(),
             actionText: extractActionText(line),
@@ -208,8 +217,9 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
       const year = match[3] ? parseInt(match[3], 10) : receivedYear;
 
       if (month !== undefined && isValidCalendarDate(year, month, day)) {
-        const timeMatch = line.slice(match.index).match(/\b(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\b/i);
-        const { hour, minute } = parseTimeString(timeMatch ? timeMatch[1] : "");
+        const afterMatch = line.slice(match.index + match[0].length);
+        const timeMatch = afterMatch.match(/^\s*(?:at|by|before)?\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?|\d{1,2}:\d{2})\b/i);
+        const { hour, minute, hasExplicitTime } = parseTimeString(timeMatch ? timeMatch[1] : "");
 
         // Convert IST (UTC+5:30) date & time to UTC Date timestamp
         const utcMs = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS;
@@ -218,12 +228,13 @@ export function extractDeadlines(input: DeadlineExtractionInput): ExtractedDeadl
 
         if (!seenDates.has(dateKey)) {
           seenDates.add(dateKey);
-          const snippet = line.slice(Math.max(0, match.index - 30), Math.min(line.length, match.index + 50));
+          const snippet = line.slice(Math.max(0, match.index - 30), Math.min(line.length, match.index + match[0].length + 40));
           const confidence = hasActionPrefix ? 0.95 : 0.70;
 
           candidates.push({
             title: deriveDeadlineTitle(input.subject, line),
             dueDate: dateObj,
+            hasExplicitTime,
             confidenceScore: confidence,
             evidenceSnippet: snippet.trim(),
             actionText: extractActionText(line),

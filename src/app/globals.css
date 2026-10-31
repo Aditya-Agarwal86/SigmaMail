@@ -4,29 +4,29 @@
 
 @layer base {
   :root {
-    /* Base Light Neutral Palette */
-    --background: 75 14% 96.5%;     /* #F7F8F4 soft ivory */
-    --foreground: 100 8% 15%;      /* #252923 deep charcoal */
-    --card: 0 0% 100%;             /* #FFFFFF */
-    --card-foreground: 100 8% 15%;
+    /* Base Light Neutral Palette - SigmaMail Premium Design System */
+    --background: 60 17% 96%;      /* #F7F7F2 refined soft canvas */
+    --foreground: 110 8% 15%;      /* #252A24 primary text */
+    --card: 0 0% 100%;             /* #FFFFFF card background */
+    --card-foreground: 110 8% 15%; /* #252A24 */
     --popover: 0 0% 100%;
-    --popover-foreground: 100 8% 15%;
-    --muted: 80 14% 94%;           /* #F0F2EB sidebar/muted */
-    --muted-foreground: 110 4% 43%;/* #697168 */
-    --border: 90 12% 88%;          /* #E1E5DC soft border */
-    --input: 90 12% 88%;
-    --destructive: 0 72% 51%;
+    --popover-foreground: 110 8% 15%;
+    --muted: 60 11% 93%;           /* #F0F0E9 muted surface */
+    --muted-foreground: 84 4% 45%; /* #74786F secondary text */
+    --border: 60 11% 88%;          /* #E5E5DC refined borders */
+    --input: 60 11% 88%;
+    --destructive: 0 55% 50%;      /* muted red */
     --destructive-foreground: 0 0% 100%;
     --radius: 0.625rem;
 
-    /* Default Theme Accent: Sigma Green */
-    --primary: 155 35% 22%;        /* #244A3A deep forest */
+    /* Default Theme Accent: Sigma Forest Olive #687653 */
+    --primary: 84 17% 39%;         /* #687653 primary accent */
     --primary-foreground: 0 0% 100%;
-    --secondary: 96 18% 90%;       /* #E5EBE1 pale sage */
-    --secondary-foreground: 155 35% 16%;
-    --accent: 96 18% 90%;
-    --accent-foreground: 155 35% 16%;
-    --ring: 155 35% 22%;
+    --secondary: 60 11% 93%;       /* #F0F0E9 muted sage */
+    --secondary-foreground: 110 8% 15%;
+    --accent: 60 11% 93%;
+    --accent-foreground: 110 8% 15%;
+    --ring: 84 17% 39%;
   }
 
   /* Accent Color Themes (Light Mode) */
